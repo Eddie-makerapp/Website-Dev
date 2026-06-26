@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — Chá House</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,300;0,6..96,400;0,6..96,600;1,6..96,300;1,6..96,400&family=Great+Vibes&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg: #112018; --color-bg-alt: #0F1C10; --color-surface: #16221A;
+      --color-primary: #132010; --color-primary-deep: #0C1510;
+      --color-gold: #C9A84C; --color-gold-light: #E0C06A;
+      --color-text: #F0EDE4; --color-text-muted: #B8C4B0; --color-text-faint: #5A7060;
+      --color-border: #1E3028;
+      --font-display: 'Bodoni Moda', Georgia, serif;
+      --font-script: 'Great Vibes', cursive;
+      --font-body: 'DM Sans', system-ui, sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      --radius-pill: 999px; --radius-md: 8px; --radius-lg: 16px;
+      --shadow-md: 0 8px 32px rgba(0,0,0,0.3); --shadow-lg: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; } html, body { overflow-x: hidden; }
+    body { background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); font-weight: 300; line-height: 1.7; -webkit-font-smoothing: antialiased; padding-top: 64px; }
+    a { color: inherit; text-decoration: none; } ul { list-style: none; }
+
+    /* SCROLL REVEAL */
+    .js [data-reveal] { opacity: 0; transform: translateY(28px); transition: opacity 0.6s cubic-bezier(0,0,0.2,1) var(--reveal-delay,0ms), transform 0.6s cubic-bezier(0,0,0.2,1) var(--reveal-delay,0ms); }
+    .js [data-reveal="fade-in"] { transform: none; }
+    .js [data-reveal="slide-left"] { transform: translateX(-40px); }
+    .js [data-reveal="slide-right"] { transform: translateX(40px); }
+    .js [data-reveal].is-visible { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .js [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; } }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 0 clamp(20px,5vw,80px); background: var(--color-primary); box-shadow: 0 4px 24px rgba(0,0,0,0.35); border-bottom: 1px solid rgba(184,149,90,0.30); }
+    .nav-inner { max-width: 1200px; margin: 0 auto; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-family: var(--font-display); font-size: 20px; font-weight: 400; letter-spacing: 4px; text-transform: uppercase; color: var(--color-gold-light); text-shadow: 0 0 18px rgba(201,168,76,0.5), 0 0 40px rgba(201,168,76,0.2); }
+    .nav-links { display: flex; gap: 32px; margin-left: auto; }
+    .nav-links a { font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--color-gold-light); transition: color 0.15s; }
+    .nav-links a:hover, .nav-links a.active { color: #fff; }
+    @media (max-width: 768px) { .nav-links { gap: 16px; } .nav-links a { font-size: 9px; letter-spacing: 1px; } }
+
+    /* ── HERO ── */
+    .page-hero {
+      min-height: 70vh;
+      position: relative;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      background: linear-gradient(135deg, #060d08 0%, #0E1A12 50%, #162B1A 100%);
+    }
+    .hero-glow {
+      position: absolute;
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+      top: -200px; right: -100px;
+      pointer-events: none;
+    }
+    .page-hero-inner {
+      position: relative; z-index: 1;
+      max-width: 1200px; margin: 0 auto;
+      padding: 100px clamp(20px,5vw,80px) 80px;
+    }
+    .page-eyebrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--color-gold); margin-bottom: 20px; }
+    .page-title {
+      font-family: var(--font-display);
+      font-size: clamp(52px,8vw,110px);
+      font-weight: 300;
+      color: #fff;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+    }
+    .page-title em { font-style: italic; color: var(--color-gold-light); }
+    .page-sub { font-size: 16px; font-weight: 300; color: rgba(255,255,255,0.6); max-width: 540px; line-height: 1.85; margin-bottom: 40px; }
+    .hero-rule { width: 60px; height: 1.5px; background: linear-gradient(to right, var(--color-gold), transparent); }
+
+    /* ── STORY ── */
+    .story-section { padding: clamp(80px,9vw,120px) clamp(20px,5vw,80px); background: var(--color-bg); }
+    .story-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .story-photo {
+      height: 560px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      position: relative;
+      box-shadow: var(--shadow-lg);
+    }
+    .story-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .story-photo-placeholder {
+      width: 100%; height: 100%;
+      background: linear-gradient(160deg, #1A3020 0%, #0E1A12 60%, #081009 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-script); font-size: 80px; color: var(--color-gold-light);
+      text-shadow: 0 0 40px rgba(201,168,76,0.4);
+    }
+    .story-photo::after {
+      content: '';
+      position: absolute; inset: 0;
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: var(--radius-lg);
+      pointer-events: none;
+    }
+    .story-eyebrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--color-gold); margin-bottom: 16px; }
+    .story-heading { font-family: var(--font-display); font-size: clamp(32px,4vw,52px); font-weight: 300; color: #fff; line-height: 1.15; margin-bottom: 20px; }
+    .story-heading em { font-style: italic; color: var(--color-gold-light); }
+    .story-rule { width: 48px; height: 1px; background: var(--color-gold); margin-bottom: 28px; }
+    .story-body { font-size: 15px; font-weight: 300; color: var(--color-text-muted); line-height: 1.9; margin-bottom: 16px; }
+
+    /* ── STAT STRIP ── */
+    .stat-strip {
+      background: var(--color-surface);
+      border-top: 1px solid rgba(201,168,76,0.15);
+      border-bottom: 1px solid rgba(201,168,76,0.15);
+      padding: clamp(40px,5vw,60px) clamp(20px,5vw,80px);
+    }
+    .stat-strip-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(4,1fr); gap: 32px; text-align: center; }
+    .stat-num {
+      font-family: var(--font-display); font-size: clamp(36px,5vw,64px); font-weight: 300; color: var(--color-gold-light); line-height: 1; margin-bottom: 8px; text-shadow: 0 0 30px rgba(201,168,76,0.3);
+      position: relative; overflow: hidden;
+    }
+    .stat-num::after {
+      content: ''; position: absolute; inset: 0;
+      background: var(--color-surface);
+      transform: translateY(0%); transition: none;
+    }
+    .stat-num.stat-revealed::after {
+      animation: curtain-down 1.8s cubic-bezier(0.76,0,0.24,1) forwards;
+    }
+    @keyframes curtain-down { from { transform: translateY(0%); } to { transform: translateY(105%); } }
+    .stat-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--color-text-faint); }
+
+    /* ── PILLARS ── */
+    .pillars-section { padding: clamp(80px,9vw,120px) clamp(20px,5vw,80px); background: var(--color-bg-alt); }
+    .pillars-inner { max-width: 1200px; margin: 0 auto; }
+    .pillars-header { text-align: center; margin-bottom: clamp(48px,6vw,72px); }
+    .pillars-eyebrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--color-gold); margin-bottom: 16px; }
+    .pillars-heading { font-family: var(--font-display); font-size: clamp(32px,4vw,52px); font-weight: 300; color: #fff; }
+    .pillars-heading em { font-style: italic; color: var(--color-gold-light); }
+    .pillars-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 24px; }
+    .pillar-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 36px 28px;
+      position: relative;
+      overflow: hidden;
+      opacity: 0; transform: translateY(60px);
+      transition: opacity 0.5s ease, transform 0.7s cubic-bezier(0.34,1.3,0.64,1), box-shadow 0.3s, border-color 0.3s;
+    }
+    .pillar-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(to right, var(--color-gold), transparent);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .pillar-card.dropped { opacity: 1; transform: translateY(0); }
+    .pillar-card.dropped:hover { box-shadow: 0 12px 40px rgba(0,0,0,0.35); border-color: rgba(201,168,76,0.3); transform: translateY(-4px); }
+    .pillar-card.dropped:hover::before { opacity: 1; }
+    .pillar-icon { font-size: 36px; margin-bottom: 20px; display: block; }
+    .pillar-title { font-family: var(--font-display); font-size: 20px; font-weight: 400; color: #fff; margin-bottom: 12px; line-height: 1.2; }
+    .pillar-title em { font-style: italic; color: var(--color-gold-light); display: block; font-size: 16px; }
+    .pillar-desc { font-size: 13px; font-weight: 300; color: var(--color-text-muted); line-height: 1.8; }
+
+    /* ── TEAM ── */
+    .team-section { padding: clamp(80px,9vw,120px) clamp(20px,5vw,80px); background: var(--color-bg); }
+    .team-inner { max-width: 1200px; margin: 0 auto; }
+    .team-header { margin-bottom: clamp(48px,6vw,72px); }
+    .team-eyebrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--color-gold); margin-bottom: 16px; }
+    .team-heading { font-family: var(--font-display); font-size: clamp(32px,4vw,52px); font-weight: 300; color: #fff; }
+    .team-heading em { font-style: italic; color: var(--color-gold-light); }
+    .team-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 32px; }
+    .team-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: box-shadow 0.3s, border-color 0.3s, transform 0.3s;
+    }
+    .team-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(201,168,76,0.3); transform: translateY(-4px); }
+    .team-card-img {
+      height: 280px;
+      background: linear-gradient(160deg, #1A3020 0%, #0C1410 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-script); font-size: 56px; color: var(--color-gold-light);
+      text-shadow: 0 0 30px rgba(201,168,76,0.35);
+      overflow: hidden;
+    }
+    .team-card-img img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+    .team-card-body { padding: 28px 24px 32px; }
+    .team-card-role { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--color-gold); margin-bottom: 8px; }
+    .team-card-name { font-family: var(--font-display); font-size: 24px; font-weight: 400; color: #fff; margin-bottom: 12px; }
+    .team-card-bio { font-size: 13px; font-weight: 300; color: var(--color-text-muted); line-height: 1.75; }
+
+    /* ── CTA ── */
+    .about-cta {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #060d08 0%, #0E1A12 50%, #162B1A 100%);
+      padding: clamp(80px,9vw,120px) clamp(20px,5vw,80px);
+      text-align: center;
+      border-top: 1px solid rgba(201,168,76,0.15);
+    }
+    .about-cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('images/nitro 2.avif') center center / cover no-repeat;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .about-cta::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .about-cta-inner { position: relative; z-index: 1; }
+    .about-cta-script { font-family: var(--font-script); font-size: clamp(48px,7vw,90px); color: var(--color-gold-light); text-shadow: 0 0 40px rgba(201,168,76,0.4); margin-bottom: 8px; }
+    .about-cta h2 { font-family: var(--font-display); font-size: clamp(28px,3.5vw,44px); font-weight: 300; color: #fff; margin-bottom: 16px; }
+    .about-cta h2 em { font-style: italic; color: var(--color-gold-light); }
+    .about-cta p { font-size: 15px; color: rgba(255,255,255,0.55); margin-bottom: 40px; max-width: 440px; margin-left: auto; margin-right: auto; }
+    .btn-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      border-radius: var(--radius-pill);
+      border: 1.5px solid var(--color-gold);
+      padding: 15px 52px;
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--color-gold-light);
+      background: transparent;
+      cursor: pointer; text-decoration: none;
+      position: relative; overflow: hidden;
+      transition: color 0.35s ease;
+      box-shadow: 0 0 12px rgba(201,168,76,0.2);
+    }
+    .btn-cta::before { content: ''; position: absolute; inset: 0; background: var(--color-gold); transform: scaleX(0); transform-origin: left; transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); z-index: 0; }
+    .btn-cta span { position: relative; z-index: 1; }
+    .btn-cta:hover::before { transform: scaleX(1); }
+    .btn-cta:hover { color: #0A0700; box-shadow: 0 0 28px rgba(201,168,76,0.5); }
+
+    /* FOOTER */
+    footer { background: #0E0D0C; padding: 40px clamp(20px,5vw,80px); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; }
+    .footer-brand { display: flex; flex-direction: column; gap: 6px; }
+    .footer-logo { font-family: var(--font-display); font-size: 20px; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; color: rgba(255,255,255,0.7); }
+    .footer-tagline { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.25); }
+    .footer-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .footer-copy { font-family: var(--font-mono); font-size: 9px; color: rgba(255,255,255,0.2); }
+    .footer-attr { font-family: var(--font-mono); font-size: 9px; color: rgba(255,255,255,0.2); }
+    .footer-attr span { color: #378ADD; }
+
+    @media (max-width: 1024px) { .story-inner { grid-template-columns: 1fr; } .pillars-grid { grid-template-columns: repeat(2,1fr); } .team-grid { grid-template-columns: repeat(2,1fr); } .stat-strip-inner { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 768px) { .team-grid { grid-template-columns: 1fr; } .footer-inner { grid-template-columns: 1fr; text-align: center; } .footer-nav { justify-content: center; flex-wrap: wrap; } .footer-right { align-items: center; } }
+  </style>
+</head>
+<body class="js">
+
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Chá House</a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="menu.html">Menu</a>
+        <a href="about.html" class="active">About</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="page-hero">
+    <div class="hero-glow"></div>
+    <div class="page-hero-inner">
+      <p class="page-eyebrow" data-reveal="fade-in">Who We Are</p>
+      <h1 class="page-title" data-reveal style="--reveal-delay:80ms">Rooted in <em>ritual</em></h1>
+      <p class="page-sub" data-reveal style="--reveal-delay:140ms">Chá House is a Cape Town institution built on a simple belief — that a great cup of tea is one of life's most generous gifts.</p>
+      <div class="hero-rule" data-reveal="fade-in" style="--reveal-delay:200ms"></div>
+    </div>
+  </div>
+
+  <!-- STORY -->
+  <section class="story-section">
+    <div class="story-inner">
+      <div class="story-photo" data-reveal="slide-left">
+        <img src="images/tea leaf two.avif" alt="Tea leaf">
+      </div>
+      <div data-reveal="slide-right">
+        <p class="story-eyebrow">The Beginning</p>
+        <h2 class="story-heading">A love letter to <em>the leaf</em></h2>
+        <div class="story-rule"></div>
+        <p class="story-body">Chá House opened in 2012 in a quiet corner of Heritage Square, founded by tea sommelier Mei-Lin Jacobs after years of sourcing teas across Asia. What started as a tiny tea room with six tables has grown into Cape Town's most respected tea destination — without ever losing the intimacy of that first room.</p>
+        <p class="story-body">Every cup we serve carries the story of the farmer who grew it, the season it was harvested, and the hands that prepared it. We don't just sell tea. We share a world.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAT STRIP -->
+  <div class="stat-strip">
+    <div class="stat-strip-inner">
+      <div data-reveal="fade-in">
+        <div class="stat-num">12+</div>
+        <div class="stat-label">Years Open</div>
+      </div>
+      <div data-reveal="fade-in" style="--reveal-delay:80ms">
+        <div class="stat-num">40+</div>
+        <div class="stat-label">Teas on Menu</div>
+      </div>
+      <div data-reveal="fade-in" style="--reveal-delay:160ms">
+        <div class="stat-num">8</div>
+        <div class="stat-label">Origin Countries</div>
+      </div>
+      <div data-reveal="fade-in" style="--reveal-delay:240ms">
+        <div class="stat-num">1k+</div>
+        <div class="stat-label">Monthly Guests</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PILLARS -->
+  <section class="pillars-section">
+    <div class="pillars-inner">
+      <div class="pillars-header">
+        <p class="pillars-eyebrow" data-reveal="fade-in">What We Stand For</p>
+        <h2 class="pillars-heading" data-reveal style="--reveal-delay:80ms">Our <em>pillars</em></h2>
+      </div>
+      <div class="pillars-grid">
+        <div class="pillar-card">
+          <span class="pillar-icon">🌿</span>
+          <h3 class="pillar-title">Direct <em>Sourcing</em></h3>
+          <p class="pillar-desc">We travel to farms in Japan, Taiwan, China and India to select our teas personally. No middlemen, no compromises.</p>
+        </div>
+        <div class="pillar-card">
+          <span class="pillar-icon">🫖</span>
+          <h3 class="pillar-title">Precision <em>Brewing</em></h3>
+          <p class="pillar-desc">Every tea is brewed at its correct temperature, for its correct time. We don't cut corners — not even on the water.</p>
+        </div>
+        <div class="pillar-card">
+          <span class="pillar-icon">🍃</span>
+          <h3 class="pillar-title">Seasonal <em>Menu</em></h3>
+          <p class="pillar-desc">Our pastry menu changes with the seasons. What's available today was made this morning. Nothing sits.</p>
+        </div>
+        <div class="pillar-card">
+          <span class="pillar-icon">🏡</span>
+          <h3 class="pillar-title">Community <em>First</em></h3>
+          <p class="pillar-desc">We host monthly tea education evenings, open to all. Tea culture should never be gated behind expertise.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section class="team-section">
+    <div class="team-inner">
+      <div class="team-header">
+        <p class="team-eyebrow" data-reveal="fade-in">The People</p>
+        <h2 class="team-heading" data-reveal style="--reveal-delay:80ms">Meet our <em>team</em></h2>
+      </div>
+      <div class="team-grid">
+        <div class="team-card" data-reveal>
+          <div class="team-card-img"><img src="images/Mei.avif" alt="Mei-Lin Jacobs"></div>
+          <div class="team-card-body">
+            <p class="team-card-role">Founder & Tea Sommelier</p>
+            <h3 class="team-card-name">Mei-Lin Jacobs</h3>
+            <p class="team-card-bio">Mei-Lin founded Chá House in 2012 after years of sourcing teas across Japan, Taiwan, China and India. Her palate and passion set the standard for everything we do.</p>
+          </div>
+        </div>
+        <div class="team-card" data-reveal style="--reveal-delay:100ms">
+          <div class="team-card-img"><img src="images/Tobias.avif" alt="Tobias Wentzel"></div>
+          <div class="team-card-body">
+            <p class="team-card-role">Head Baker & Pastry</p>
+            <h3 class="team-card-name">Tobias Wentzel</h3>
+            <p class="team-card-bio">Tobias bakes everything fresh each morning — from Earl Grey scones to matcha financiers. His pastries are made to pair beautifully with every tea on our menu.</p>
+          </div>
+        </div>
+        <div class="team-card" data-reveal style="--reveal-delay:200ms">
+          <div class="team-card-img"><img src="images/Amara.webp" alt="Amara Ndlovu"></div>
+          <div class="team-card-body">
+            <p class="team-card-role">Senior Tea Host</p>
+            <h3 class="team-card-name">Amara Ndlovu</h3>
+            <p class="team-card-bio">Amara guides our guests through every ceremony and tasting flight with warmth and deep knowledge. She makes every visit feel personal and unhurried.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="about-cta">
+    <div class="about-cta-inner">
+      <p class="about-cta-script" data-reveal="fade-in">Come sit with us</p>
+      <h2 data-reveal style="--reveal-delay:80ms">Reserve a seat, let us brew something <em>remarkable</em></h2>
+      <p data-reveal style="--reveal-delay:140ms">Weekend tea ceremonies and tasting flights fill up fast — book ahead to secure your table.</p>
+      <a href="contact.html" class="btn-cta" data-reveal style="--reveal-delay:200ms"><span>Book a Seat</span></a>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="footer-logo">Chá House</span>
+        <span class="footer-tagline">Artisan Tea Café &bull; Est. 2012</span>
+      </div>
+      <div class="footer-right">
+        <span class="footer-copy">&copy; 2025 Chá House. All rights reserved.</span>
+        <span class="footer-attr">Built by <span>StudioDesk</span></span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.documentElement.classList.add('js');
+    const els = document.querySelectorAll('[data-reveal]');
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-visible'); obs.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    els.forEach(el => obs.observe(el));
+
+    // Drop-in for pillar cards with stagger
+    // Stat strip — curtain + count up right to left
+    const statNums = document.querySelectorAll('.stat-strip .stat-num');
+    const statStrip = document.querySelector('.stat-strip');
+
+    function countUp(el, target, suffix, duration) {
+      const start = performance.now();
+      const isFloat = target % 1 !== 0;
+      el.textContent = '0' + suffix;
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = isFloat ? (eased * target).toFixed(1) : Math.round(eased * target);
+        el.textContent = current + suffix;
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    const statObs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const parsed = Array.from(statNums).map(el => {
+          const match = el.textContent.trim().match(/^([\d.]+)(.*)$/);
+          return match ? { target: parseFloat(match[1]), suffix: match[2] || '' } : null;
+        });
+        parsed.forEach((data, i) => { if (data) statNums[i].textContent = '0' + data.suffix; });
+        statNums.forEach(el => el.classList.add('stat-revealed'));
+        const last = statNums.length - 1;
+        parsed.forEach((data, i) => {
+          if (!data) return;
+          setTimeout(() => countUp(statNums[i], data.target, data.suffix, 1000), 1800 + ((last - i) * 300));
+        });
+        statObs.unobserve(statStrip);
+      });
+    }, { threshold: 0.3 });
+    statObs.observe(statStrip);
+
+    const cards = document.querySelectorAll('.pillar-card');
+    const cardObs = new IntersectionObserver(entries => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('dropped'), i * 120);
+          cardObs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    cards.forEach(c => cardObs.observe(c));
+  </script>
+</body>
+</html>

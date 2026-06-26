@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chá House — Artisan Tea Café</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,300;0,6..96,400;0,6..96,600;1,6..96,300;1,6..96,400&family=Great+Vibes&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg:           #112018;
+      --color-bg-alt:       #0F1C10;
+      --color-surface:      #16221A;
+      --color-primary:      #132010;
+      --color-primary-deep: #0C1510;
+      --color-teal:         #16221A;
+      --color-teal-light:   #1E3022;
+      --color-jade:         #C9A84C;
+      --color-jade-light:   #E0C06A;
+      --color-gold:         #C9A84C;
+      --color-gold-light:   #E0C06A;
+      --color-text:         #F0EDE4;
+      --color-text-muted:   #B8C4B0;
+      --color-text-faint:   #5A7060;
+      --color-border:       #1E3028;
+      --font-display:       'Bodoni Moda', Georgia, serif;
+      --font-body:          'DM Sans', system-ui, sans-serif;
+      --font-mono:          'DM Mono', monospace;
+      --radius-pill:        999px;
+      --radius-md:          8px;
+      --radius-lg:          16px;
+      --shadow-sm:          0 1px 4px rgba(0,0,0,0.07);
+      --shadow-md:          0 8px 32px rgba(0,0,0,0.12);
+      --shadow-lg:          0 20px 60px rgba(0,0,0,0.18);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    html, body { overflow-x: hidden; }
+    body { background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); font-weight: 300; line-height: 1.7; -webkit-font-smoothing: antialiased; padding-top: 64px; }
+    a { color: inherit; text-decoration: none; }
+    ul { list-style: none; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 80px); }
+
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: var(--radius-pill); border: 1.5px solid transparent; cursor: pointer; font-family: var(--font-body); font-size: 13px; font-weight: 500; letter-spacing: 0.5px; padding: 13px 32px; white-space: nowrap; text-decoration: none; transition: background 0.3s, border-color 0.3s, color 0.3s, box-shadow 0.3s, transform 0.2s; user-select: none; }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--color-primary); color: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.25); }
+    .btn-primary:hover { background: var(--color-primary-deep); box-shadow: 0 4px 20px rgba(0,0,0,0.35); }
+    .btn-secondary { background: transparent; color: var(--color-primary); border-color: var(--color-primary); }
+    .btn-secondary:hover { background: var(--color-primary); color: #fff; }
+    .btn-ghost { background: transparent; color: var(--color-primary); border-color: transparent; padding-left: 4px; padding-right: 4px; }
+    .btn-ghost:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .btn-sm { font-size: 11px; padding: 9px 20px; letter-spacing: 1.5px; text-transform: uppercase; font-family: var(--font-mono); }
+    .btn-lg { font-size: 15px; padding: 16px 48px; }
+    .btn-inverse { background: #fff; color: var(--color-primary); box-shadow: 0 0 0 0 rgba(201,168,76,0); }
+    .btn-inverse:hover { background: #fff; transform: translateY(-3px); box-shadow: 0 8px 24px rgba(201,168,76,0.45), 0 0 40px rgba(201,168,76,0.2); }
+    .btn-lg[style*="transparent"]:hover { border-color: var(--color-gold-light) !important; color: var(--color-gold-light) !important; transform: translateY(-3px); box-shadow: 0 8px 24px rgba(201,168,76,0.3), 0 0 40px rgba(201,168,76,0.15); }
+
+    /* SCROLL REVEAL */
+    .js [data-reveal] { opacity: 0; transform: translateY(28px); transition: opacity 0.55s cubic-bezier(0,0,0.2,1) var(--reveal-delay,0ms), transform 0.55s cubic-bezier(0,0,0.2,1) var(--reveal-delay,0ms); }
+    .js [data-reveal="fade-in"] { transform: none; }
+    .js [data-reveal="slide-left"] { transform: translateX(-40px); }
+    .js [data-reveal="slide-right"] { transform: translateX(40px); }
+    .js [data-reveal="scale-up"] { transform: scale(0.96); }
+    .js [data-reveal].is-visible { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .js [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; } }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 0 clamp(20px,5vw,80px); background: var(--color-primary); box-shadow: 0 4px 24px rgba(0,0,0,0.35); border-bottom: 1px solid rgba(184,149,90,0.30); }
+    .nav-inner { max-width: 1200px; margin: 0 auto; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-family: var(--font-display); font-size: 20px; font-weight: 400; letter-spacing: 4px; text-transform: uppercase; color: var(--color-gold-light); text-shadow: 0 0 18px rgba(201,168,76,0.5), 0 0 40px rgba(201,168,76,0.2); }
+    .nav-links { display: flex; gap: 32px; margin-left: auto; }
+    .nav-links a { font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--color-gold-light); transition: color 0.15s; }
+    .nav-links a:hover, .nav-links a.active { color: #fff; }
+    @media (max-width: 768px) { .nav-links { gap: 16px; } .nav-links a { font-size: 9px; letter-spacing: 1px; } }
+
+    /* HERO */
+    .hero { min-height: 100vh; position: relative; display: flex; align-items: center; overflow: hidden; }
+    .hero-bg { position: absolute; inset: 0; background: linear-gradient(135deg, #081009 0%, #0E1A12 45%, #162B1A 75%, #1A3320 100%); z-index: 0; }
+    .hero-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(8,16,9,0.96) 35%, rgba(26,51,32,0.30) 100%); }
+    .hero-content { position: relative; z-index: 1; width: 100%; max-width: 1400px; margin: 0 0 0 clamp(20px,5vw,100px); padding: 48px 0 60px; display: grid; grid-template-columns: 1fr 500px; gap: 60px; align-items: center; }
+    .hero-left { display: flex; flex-direction: column; gap: 28px; align-items: flex-start; }
+    .hero-photo-panel { position: relative; height: 540px; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg); background: #2E2820; display: flex; align-items: center; justify-content: center; font-size: 80px; }
+    .hero-photo-panel img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .hero-photo-panel::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 60%, rgba(14,13,12,0.55) 100%); pointer-events: none; }
+    .hero-eyebrow { font-family: var(--font-mono); font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 3px; color: var(--color-gold-light); }
+    .hero-wordmark { display: block; width: 100%; line-height: 1; }
+    .hero-wordmark svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .hero-wordmark text { font-family: 'Great Vibes', cursive; font-size: 130px; fill: none; stroke: var(--color-gold-light); stroke-width: 1px; paint-order: stroke fill; filter: drop-shadow(0 0 12px rgba(201,168,76,0.6)) drop-shadow(0 0 32px rgba(201,168,76,0.25)); }
+    .hero-wordmark .wm-stroke { stroke-dasharray: 4000; stroke-dashoffset: 4000; }
+    .hero-wordmark .wm-stroke.is-drawing { animation: wm-draw 2.8s cubic-bezier(0.2,0,0.5,1) forwards; }
+    .hero-wordmark .wm-fill { fill: var(--color-gold-light); stroke: var(--color-gold-light); stroke-width: 0.4px; opacity: 0; }
+    .hero-wordmark .wm-fill.is-drawing { animation: wm-fill 1.2s ease-in forwards 1.8s; }
+    @keyframes wm-fill { 0% { opacity: 0; } 100% { opacity: 1; } }
+    @keyframes wm-draw { to { stroke-dashoffset: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-wordmark .wm-stroke { stroke-dashoffset: 0 !important; animation: none !important; }
+      .hero-wordmark .wm-fill { opacity: 1 !important; animation: none !important; }
+    }
+    .hero-tagline { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 4px; color: rgba(255,255,255,0.45); display: flex; align-items: center; gap: 14px; }
+    .hero-tagline span { color: var(--color-gold-light); }
+    .hero-sub { font-size: 15px; font-weight: 300; color: rgba(255,255,255,0.65); line-height: 1.8; max-width: 460px; }
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+
+    /* SECTION HEADERS */
+    .section-eyebrow { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 3px; color: var(--color-gold); margin-bottom: 12px; }
+    .section-heading { font-family: var(--font-display); font-size: clamp(28px,3.5vw,48px); font-weight: 300; color: var(--color-text); line-height: 1.2; letter-spacing: -0.01em; margin-bottom: 16px; }
+    .section-heading em { font-style: italic; color: var(--color-gold-light); text-shadow: 0 0 20px rgba(201,168,76,0.4); }
+    .section-rule { width: 48px; height: 1px; background: var(--color-gold); margin-bottom: 24px; }
+
+    /* MARQUEE */
+    .marquee-band { overflow: hidden; padding: 18px 0; background: var(--color-primary); border-top: 3px solid var(--color-gold-light); border-bottom: 3px solid var(--color-gold-light); box-shadow: 0 -8px 28px rgba(201,168,76,0.45), inset 0 0 40px rgba(201,168,76,0.12); position: relative; z-index: 2; }
+
+    .marquee-track { display: flex; width: max-content; animation: marquee 28s linear infinite; }
+    .marquee-track:hover { animation-play-state: paused; }
+    .marquee-item { display: flex; align-items: center; gap: 18px; padding: 0 24px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--color-gold-light); white-space: nowrap; }
+    .marquee-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--color-gold); flex-shrink: 0; box-shadow: 0 0 6px rgba(201,168,76,0.8); }
+    @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* MENU PREVIEW */
+    .menu-section { padding: clamp(60px,7vw,100px) 0; background: var(--color-bg); }
+    .menu-header { display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: end; max-width: 1200px; margin: 0 auto clamp(40px,5vw,60px); padding: 0 clamp(20px,5vw,80px); }
+    .menu-wrap { overflow: hidden; }
+    .menu-track { display: flex; gap: 20px; padding: 20px 0 20px; width: max-content; animation: menu-scroll 80s linear infinite; }
+    .menu-track:hover { animation-play-state: paused; }
+    @keyframes menu-scroll { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+    .menu-card { flex: 0 0 280px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
+    .menu-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .menu-card-img { width: 100%; height: 200px; overflow: hidden; }
+    .menu-card-body { padding: 22px 20px 24px; }
+    .menu-card-tag { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--color-gold); margin-bottom: 6px; }
+    .menu-card-title { font-family: var(--font-display); font-size: 20px; font-weight: 400; color: var(--color-text); margin-bottom: 8px; }
+    .menu-card-desc { font-size: 12px; font-weight: 300; color: var(--color-text-muted); line-height: 1.7; margin-bottom: 16px; }
+    .menu-card-footer { display: flex; justify-content: space-between; align-items: center; }
+    .menu-card-price { font-family: var(--font-display); font-size: 22px; font-weight: 300; color: var(--color-gold-light); }
+    .menu-dots { display: flex; gap: 8px; justify-content: center; margin-top: 32px; }
+    .menu-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-border); border: none; cursor: pointer; transition: background 0.2s, transform 0.2s; padding: 0; }
+    .menu-dot.active { background: var(--color-gold); transform: scale(1.3); }
+    .menu-cta { display: flex; justify-content: center; margin-top: 40px; }
+    .btn-menu-view { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 48px; border-radius: var(--radius-pill); border: 1.5px solid var(--color-gold); color: var(--color-gold-light); font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; overflow: hidden; transition: color 0.35s ease; }
+    .btn-menu-view::before { content: ''; position: absolute; inset: 0; background: var(--color-gold); transform: scaleX(0); transform-origin: left; transition: transform 0.4s ease; z-index: 0; }
+    .btn-menu-view:hover::before { transform: scaleX(1); }
+    .btn-menu-view:hover { color: var(--color-primary); }
+    .btn-menu-view span { position: relative; z-index: 1; }
+
+    /* ABOUT STRIP */
+    .about-strip { padding: clamp(60px,7vw,100px) clamp(20px,5vw,80px); background: var(--color-bg-alt); }
+    .about-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+    .about-photo { height: 460px; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md); background: #D8CFC4; display: flex; align-items: center; justify-content: center; font-size: 80px; }
+    .about-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .about-body { font-size: 15px; font-weight: 300; color: var(--color-text-muted); line-height: 1.85; margin-bottom: 32px; }
+
+    /* STATS */
+    .stats-band { background: var(--color-primary); padding: clamp(44px,5vw,72px) clamp(20px,5vw,80px); }
+    .stats-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(4,1fr); gap: 32px; }
+    .stat-item { text-align: center; }
+    .stat-item + .stat-item { border-left: 1px solid rgba(255,255,255,0.15); }
+    .stat-num {
+      font-family: var(--font-display); font-size: clamp(40px,5vw,64px); font-weight: 300; color: #fff; line-height: 1; margin-bottom: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-num::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--color-primary);
+      transform: translateY(0%);
+      transition: none;
+    }
+    .stat-num.stat-revealed::after {
+      animation: curtain-down 1.8s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+    }
+    @keyframes curtain-down {
+      from { transform: translateY(0%); }
+      to   { transform: translateY(105%); }
+    }
+    .stat-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(255,255,255,0.55); }
+
+    /* TESTIMONIALS */
+    .testi-section { padding: clamp(60px,7vw,100px) clamp(20px,5vw,80px); background: var(--color-bg); }
+    .testi-inner { max-width: 1200px; margin: 0 auto; }
+    .testi-header { text-align: center; margin-bottom: clamp(44px,5vw,64px); }
+    .testi-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+    .testi-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 30px 26px; transition: box-shadow 0.2s; }
+    .testi-card:hover { box-shadow: var(--shadow-md); }
+    .testi-stars { color: var(--color-gold); font-size: 13px; margin-bottom: 16px; }
+    .testi-quote { font-family: var(--font-display); font-size: 15px; font-style: italic; font-weight: 300; color: var(--color-text); line-height: 1.65; margin-bottom: 22px; }
+    .testi-quote::before { content: '\201C'; } .testi-quote::after { content: '\201D'; }
+    .testi-author { display: flex; align-items: center; gap: 12px; }
+    .testi-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--color-bg-alt); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 15px; color: var(--color-gold); flex-shrink: 0; overflow: hidden; }
+    .testi-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .testi-name { font-size: 13px; font-weight: 500; color: var(--color-text); }
+    .testi-meta { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+
+    /* CTA */
+    .cta-section { position: relative; overflow: hidden; background: var(--color-primary); padding: clamp(60px,7vw,100px) clamp(20px,5vw,80px); text-align: center; }
+    .cta-section::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(184,149,90,0.10) 0%, transparent 60%); pointer-events: none; }
+    .cta-inner { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; }
+    .cta-eyebrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 16px; }
+    .cta-heading { font-family: var(--font-display); font-size: clamp(32px,4vw,54px); font-weight: 300; color: #fff; line-height: 1.15; margin-bottom: 20px; }
+    .cta-heading em { font-style: italic; color: var(--color-gold-light); }
+    .cta-sub { font-size: 15px; font-weight: 300; color: rgba(255,255,255,0.65); line-height: 1.8; margin-bottom: 40px; max-width: 500px; margin-left: auto; margin-right: auto; }
+    .cta-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+    /* FOOTER */
+    footer { background: #0E0D0C; padding: 40px clamp(20px,5vw,80px); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; }
+    .footer-brand { display: flex; flex-direction: column; gap: 6px; }
+    .footer-logo { font-family: var(--font-display); font-size: 20px; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; color: rgba(255,255,255,0.7); }
+    .footer-tagline { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.25); }
+    .footer-nav { display: flex; gap: 28px; justify-self: center; }
+    .footer-nav a { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.4); transition: color 0.15s; }
+    .footer-nav a:hover { color: var(--color-gold-light); }
+    .footer-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .footer-copy { font-family: var(--font-mono); font-size: 9px; color: rgba(255,255,255,0.2); }
+    .footer-attr { font-family: var(--font-mono); font-size: 9px; color: rgba(255,255,255,0.2); }
+    .footer-attr span { color: #378ADD; }
+
+    /* RESPONSIVE */
+    @media (max-width: 1100px) { .hero-content { grid-template-columns: 1fr; } .hero-photo-panel { height: 320px; max-width: 500px; } }
+    @media (max-width: 768px) {
+      .about-inner { grid-template-columns: 1fr; }
+      .stats-inner { grid-template-columns: repeat(2,1fr); }
+      .stat-item + .stat-item { border-left: none; }
+      .stat-item:nth-child(odd) { border-right: 1px solid rgba(255,255,255,0.15); }
+      .testi-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 16px; padding-bottom: 8px; scrollbar-width: none; }
+      .testi-grid::-webkit-scrollbar { display: none; }
+      .testi-card { flex: 0 0 80vw; scroll-snap-align: start; }
+      .menu-card { flex: 0 0 78vw; scroll-snap-align: start; }
+      .footer-inner { grid-template-columns: 1fr; text-align: center; }
+      .footer-nav { justify-content: center; flex-wrap: wrap; }
+      .footer-right { align-items: center; }
+    }
+  </style>
+</head>
+<body class="js">
+
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Chá House</a>
+      <div class="nav-links">
+        <a href="index.html" class="active">Home</a>
+        <a href="menu.html">Menu</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <div class="hero-left">
+        <p class="hero-eyebrow" data-reveal="fade-in">Est. 2012 &bull; Cape Town</p>
+        <h1 class="hero-wordmark" id="restaurant-wordmark">
+          <svg viewBox="0 0 700 280" aria-label="Chá House" role="img" preserveAspectRatio="xMinYMid meet">
+            <text class="wm-fill" x="0" y="140">Chá House</text>
+            <text class="wm-stroke" x="0" y="140">Chá House</text>
+          </svg>
+        </h1>
+        <p class="hero-tagline" data-reveal style="--reveal-delay:140ms">Artisan Tea Café <span>·</span> Heritage Square</p>
+        <p class="hero-sub" data-reveal style="--reveal-delay:200ms">Single-origin teas sourced from Japan, Taiwan, China and India. Brewed with precision, paired with handcrafted pastries and light bites. A moment of calm in the heart of the city.</p>
+        <div class="hero-actions" data-reveal style="--reveal-delay:280ms">
+          <a href="contact.html" class="btn btn-inverse btn-lg">Reserve a Seat</a>
+          <a href="menu.html" class="btn btn-lg" style="background:transparent;border:1.5px solid rgba(255,255,255,0.4);color:#fff;">View Menu</a>
+        </div>
+      </div>
+      <div class="hero-photo-panel">
+        <img src="images/Hero  photo.avif" alt="Chá House interior">
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee-band" aria-hidden="true">
+    <div class="marquee-track">
+      <span class="marquee-item">Gyokuro <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Longjing <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Hojicha Latte <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Matcha Ceremony <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Earl Grey Scones <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Oolong Flight <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Darjeeling First Flush <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Yunnan Gold <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Gyokuro <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Longjing <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Hojicha Latte <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Matcha Ceremony <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Earl Grey Scones <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Oolong Flight <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Darjeeling First Flush <span class="marquee-dot"></span></span>
+      <span class="marquee-item">Yunnan Gold <span class="marquee-dot"></span></span>
+    </div>
+  </div>
+
+  <section class="menu-section">
+    <div class="menu-header">
+      <div>
+        <p class="section-eyebrow" data-reveal="fade-in">Our Favourites</p>
+        <h2 class="section-heading" data-reveal style="--reveal-delay:80ms">Brewed with care, <em>paired with intention</em></h2>
+      </div>
+      <a href="menu.html" class="btn btn-ghost" data-reveal="fade-in">Full menu →</a>
+    </div>
+    <div class="menu-wrap" id="menu-wrap">
+      <div class="menu-track" id="menu-track">
+        <!-- Original set - interleaved across all categories -->
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Boba tea/Boba honey tea.avif" alt="Honey Boba Tea" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Honey Boba Tea</h3><p class="menu-card-desc">Golden honey milk tea with hand-rolled tapioca pearls and wildflower honey.</p><div class="menu-card-footer"><span class="menu-card-price">R75</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Classic sushi roll.avif" alt="Classic Sushi Roll" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Sushi</p><h3 class="menu-card-title">Classic Sushi Roll</h3><p class="menu-card-desc">Traditional California roll with crab, avocado and cucumber wrapped in nori.</p><div class="menu-card-footer"><span class="menu-card-price">R120</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Cold drinks/chocolate milkshake.avif" alt="Chocolate Milkshake" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Chocolate Milkshake</h3><p class="menu-card-desc">Thick dark chocolate shake blended with premium ice cream and real cocoa.</p><div class="menu-card-footer"><span class="menu-card-price">R65</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/noodle/beef fried noodle.avif" alt="Beef Fried Noodle" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Noodles</p><h3 class="menu-card-title">Beef Fried Noodle</h3><p class="menu-card-desc">Wok-tossed egg noodles with tender beef strips, spring onion and oyster sauce.</p><div class="menu-card-footer"><span class="menu-card-price">R110</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/hot drinks/americano coffe.avif" alt="Americano" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Hot Drinks</p><h3 class="menu-card-title">Americano</h3><p class="menu-card-desc">Double espresso with hot water - clean, bold and deeply aromatic.</p><div class="menu-card-footer"><span class="menu-card-price">R40</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Boba tea/Oreo boba.avif" alt="Oreo Boba" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Oreo Boba</h3><p class="menu-card-desc">Creamy Oreo milk shake with boba pearls and a dusting of crushed cookies.</p><div class="menu-card-footer"><span class="menu-card-price">R80</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/noodle/chicken udon noodle.avif" alt="Chicken Udon" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Noodles</p><h3 class="menu-card-title">Chicken Udon</h3><p class="menu-card-desc">Silky udon noodles in clear chicken broth with tender chicken and nori.</p><div class="menu-card-footer"><span class="menu-card-price">R115</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Cold drinks/biscoff milkshake.webp" alt="Biscoff Milkshake" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Biscoff Milkshake</h3><p class="menu-card-desc">Creamy Biscoff spread blended smooth with vanilla ice cream and whole milk.</p><div class="menu-card-footer"><span class="menu-card-price">R70</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Boba tea/Salted caramel boba.avif" alt="Salted Caramel Boba" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Salted Caramel Boba</h3><p class="menu-card-desc">Rich caramel milk tea with a pinch of sea salt and silky tapioca pearls.</p><div class="menu-card-footer"><span class="menu-card-price">R80</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/dumplings.avif" alt="Steamed Dumplings" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Others</p><h3 class="menu-card-title">Steamed Dumplings</h3><p class="menu-card-desc">Hand-folded dumplings with pork and ginger, served with soy-ginger dipping sauce.</p><div class="menu-card-footer"><span class="menu-card-price">R95</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/hot drinks/cappuchino coffee.avif" alt="Cappuccino" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Hot Drinks</p><h3 class="menu-card-title">Cappuccino</h3><p class="menu-card-desc">Espresso with velvety steamed milk and a generous layer of silky foam.</p><div class="menu-card-footer"><span class="menu-card-price">R45</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Boba tea/biscoff boba.avif" alt="Biscoff Boba" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Biscoff Boba</h3><p class="menu-card-desc">Spiced Biscoff spread blended into creamy milk tea with chewy boba pearls.</p><div class="menu-card-footer"><span class="menu-card-price">R80</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Sushi sandwhich.webp" alt="Sushi Sandwich" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Sushi</p><h3 class="menu-card-title">Sushi Sandwich</h3><p class="menu-card-desc">Pressed sushi rice layered with fresh salmon, avocado and sesame.</p><div class="menu-card-footer"><span class="menu-card-price">R135</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Cold drinks/strawberry milkshake.avif" alt="Strawberry Milkshake" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Strawberry Milkshake</h3><p class="menu-card-desc">Fresh strawberries blended with vanilla ice cream and chilled whole milk.</p><div class="menu-card-footer"><span class="menu-card-price">R65</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/noodle/pork fried noodle.avif" alt="Pork Fried Noodle" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Noodles</p><h3 class="menu-card-title">Pork Fried Noodle</h3><p class="menu-card-desc">Wok-charred noodles with pork belly, chilli oil and crispy shallots.</p><div class="menu-card-footer"><span class="menu-card-price">R110</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Boba tea/cookies and cream boba.webp" alt="Cookies and Cream Boba" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Cookies and Cream Boba</h3><p class="menu-card-desc">Velvety cookies and cream blended with boba pearls for an indulgent treat.</p><div class="menu-card-footer"><span class="menu-card-price">R80</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Other foods/chicken dumpling.avif" alt="Chicken Dumpling" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Others</p><h3 class="menu-card-title">Chicken Dumpling</h3><p class="menu-card-desc">Juicy chicken and lemongrass dumplings steamed to perfection, with chilli dip.</p><div class="menu-card-footer"><span class="menu-card-price">R95</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/hot drinks/mocha coffee.avif" alt="Mocha" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Hot Drinks</p><h3 class="menu-card-title">Mocha</h3><p class="menu-card-desc">Rich espresso with dark chocolate and steamed milk, finished with cocoa dust.</p><div class="menu-card-footer"><span class="menu-card-price">R50</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Cold drinks/coffee milkshake.webp" alt="Coffee Milkshake" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Coffee Milkshake</h3><p class="menu-card-desc">Cold brew coffee blended with vanilla ice cream for a caffeinated treat.</p><div class="menu-card-footer"><span class="menu-card-price">R70</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Boba tea/creme buhle boba.webp" alt="Creme Brulee Boba" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Creme Brulee Boba</h3><p class="menu-card-desc">Custard-smooth milk tea with caramelised sugar notes and classic boba pearls.</p><div class="menu-card-footer"><span class="menu-card-price">R85</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/noodle/prawn udon noodle.avif" alt="Prawn Udon" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Noodles</p><h3 class="menu-card-title">Prawn Udon</h3><p class="menu-card-desc">Plump tiger prawns in a miso-infused broth with thick udon and sesame oil.</p><div class="menu-card-footer"><span class="menu-card-price">R135</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Cold drinks/peach freezo.webp" alt="Peach Freezo" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Peach Freezo</h3><p class="menu-card-desc">Sweet peach and crushed ice blended into a light, fruity frozen slush.</p><div class="menu-card-footer"><span class="menu-card-price">R50</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/sushi roll.avif" alt="House Sushi Roll" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Sushi</p><h3 class="menu-card-title">House Sushi Roll</h3><p class="menu-card-desc">Our signature roll with tuna, cucumber and spicy mayo, finished with tobiko.</p><div class="menu-card-footer"><span class="menu-card-price">R145</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Boba tea/pistacio boba.avif" alt="Pistachio Boba" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Pistachio Boba</h3><p class="menu-card-desc">Lush pistachio milk tea with earthy sweetness and tapioca pearls.</p><div class="menu-card-footer"><span class="menu-card-price">R85</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Other foods/pork dumpling.avif" alt="Pork Dumpling" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Others</p><h3 class="menu-card-title">Pork Dumpling</h3><p class="menu-card-desc">Classic pork and cabbage dumplings, pan-seared golden with a soy dipping sauce.</p><div class="menu-card-footer"><span class="menu-card-price">R90</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/hot drinks/double shot espresso coffee.avif" alt="Double Espresso" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Hot Drinks</p><h3 class="menu-card-title">Double Espresso</h3><p class="menu-card-desc">Two concentrated shots of our house espresso blend - intense and smooth.</p><div class="menu-card-footer"><span class="menu-card-price">R38</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Cold drinks/chocolate freezo.webp" alt="Chocolate Freezo" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Chocolate Freezo</h3><p class="menu-card-desc">Blended ice and chocolate syrup, frozen to a smooth, refreshing slush.</p><div class="menu-card-footer"><span class="menu-card-price">R55</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Boba tea/strawberry boba.webp" alt="Strawberry Boba" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Strawberry Boba</h3><p class="menu-card-desc">Fresh strawberry milk tea blended with sweet tapioca pearls and a hint of vanilla.</p><div class="menu-card-footer"><span class="menu-card-price">R75</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/noodle/beef udon noodle.avif" alt="Beef Udon" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Noodles</p><h3 class="menu-card-title">Beef Udon</h3><p class="menu-card-desc">Thick udon in a rich dashi broth with slow-braised beef and soft-poached egg.</p><div class="menu-card-footer"><span class="menu-card-price">R125</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Cold drinks/salted caramel milkshake.avif" alt="Salted Caramel Shake" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Salted Caramel Shake</h3><p class="menu-card-desc">House caramel sauce with sea salt, blended with ice cream into a thick shake.</p><div class="menu-card-footer"><span class="menu-card-price">R70</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Other foods/chicken noodle soup.avif" alt="Chicken Noodle Soup" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Others</p><h3 class="menu-card-title">Chicken Noodle Soup</h3><p class="menu-card-desc">Slow-cooked chicken broth with thin egg noodles, ginger and spring onion.</p><div class="menu-card-footer"><span class="menu-card-price">R100</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Boba tea/tiramsu boba.avif" alt="Tiramisu Boba" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Tiramisu Boba</h3><p class="menu-card-desc">Espresso-kissed tiramisu milk tea with mascarpone notes and boba pearls.</p><div class="menu-card-footer"><span class="menu-card-price">R85</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Cold drinks/coffee freezo.webp" alt="Coffee Freezo" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Coffee Freezo</h3><p class="menu-card-desc">Espresso and crushed ice blended into a bold, energising frozen drink.</p><div class="menu-card-footer"><span class="menu-card-price">R55</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/noodle/chicken fried noodle.avif" alt="Chicken Fried Noodle" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Noodles</p><h3 class="menu-card-title">Chicken Fried Noodle</h3><p class="menu-card-desc">Stir-fried noodles with marinated chicken, bok choy and a light soy glaze.</p><div class="menu-card-footer"><span class="menu-card-price">R105</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Other foods/prawn dumpling.webp" alt="Prawn Dumpling" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Others</p><h3 class="menu-card-title">Prawn Dumpling</h3><p class="menu-card-desc">Delicate prawn har gow steamed in translucent rice wrappers with ginger and chive.</p><div class="menu-card-footer"><span class="menu-card-price">R105</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Cold drinks/coke.avif" alt="Coke" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Coke</h3><p class="menu-card-desc">Ice-cold Coca-Cola served in a chilled glass with a slice of lemon.</p><div class="menu-card-footer"><span class="menu-card-price">R30</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/noodle/veggie udon noodles.avif" alt="Veggie Udon" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Noodles</p><h3 class="menu-card-title">Veggie Udon</h3><p class="menu-card-desc">Garden vegetable udon in a light kombu broth with tofu and spinach.</p><div class="menu-card-footer"><span class="menu-card-price">R95</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Cold drinks/salted caramel freezo.jpg" alt="Salted Caramel Freezo" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Salted Caramel Freezo</h3><p class="menu-card-desc">Caramel and sea salt blended with ice into a frozen, indulgent slush.</p><div class="menu-card-footer"><span class="menu-card-price">R55</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Cold drinks/fanta.avif" alt="Fanta" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Fanta</h3><p class="menu-card-desc">Chilled Fanta Orange served over ice - fruity, fizzy and refreshing.</p><div class="menu-card-footer"><span class="menu-card-price">R30</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card"><div class="menu-card-img"><img src="images/Cold drinks/appletiser.webp" alt="Appletiser" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Appletiser</h3><p class="menu-card-desc">Sparkling apple juice - crisp, elegant and naturally refreshing.</p><div class="menu-card-footer"><span class="menu-card-price">R35</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <!-- Duplicate set for seamless infinite loop -->
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Boba tea/Boba honey tea.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Honey Boba Tea</h3><p class="menu-card-desc">Golden honey milk tea with hand-rolled tapioca pearls and wildflower honey.</p><div class="menu-card-footer"><span class="menu-card-price">R75</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Classic sushi roll.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Sushi</p><h3 class="menu-card-title">Classic Sushi Roll</h3><p class="menu-card-desc">Traditional California roll with crab, avocado and cucumber wrapped in nori.</p><div class="menu-card-footer"><span class="menu-card-price">R120</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Cold drinks/chocolate milkshake.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Chocolate Milkshake</h3><p class="menu-card-desc">Thick dark chocolate shake blended with premium ice cream and real cocoa.</p><div class="menu-card-footer"><span class="menu-card-price">R65</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/noodle/beef fried noodle.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Noodles</p><h3 class="menu-card-title">Beef Fried Noodle</h3><p class="menu-card-desc">Wok-tossed egg noodles with tender beef strips, spring onion and oyster sauce.</p><div class="menu-card-footer"><span class="menu-card-price">R110</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/hot drinks/americano coffe.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Hot Drinks</p><h3 class="menu-card-title">Americano</h3><p class="menu-card-desc">Double espresso with hot water - clean, bold and deeply aromatic.</p><div class="menu-card-footer"><span class="menu-card-price">R40</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Boba tea/Oreo boba.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Oreo Boba</h3><p class="menu-card-desc">Creamy Oreo milk shake with boba pearls and a dusting of crushed cookies.</p><div class="menu-card-footer"><span class="menu-card-price">R80</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/noodle/chicken udon noodle.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Noodles</p><h3 class="menu-card-title">Chicken Udon</h3><p class="menu-card-desc">Silky udon noodles in clear chicken broth with tender chicken and nori.</p><div class="menu-card-footer"><span class="menu-card-price">R115</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Cold drinks/biscoff milkshake.webp" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Biscoff Milkshake</h3><p class="menu-card-desc">Creamy Biscoff spread blended smooth with vanilla ice cream and whole milk.</p><div class="menu-card-footer"><span class="menu-card-price">R70</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Boba tea/Salted caramel boba.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Salted Caramel Boba</h3><p class="menu-card-desc">Rich caramel milk tea with a pinch of sea salt and silky tapioca pearls.</p><div class="menu-card-footer"><span class="menu-card-price">R80</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/dumplings.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Others</p><h3 class="menu-card-title">Steamed Dumplings</h3><p class="menu-card-desc">Hand-folded dumplings with pork and ginger, served with soy-ginger dipping sauce.</p><div class="menu-card-footer"><span class="menu-card-price">R95</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/hot drinks/cappuchino coffee.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Hot Drinks</p><h3 class="menu-card-title">Cappuccino</h3><p class="menu-card-desc">Espresso with velvety steamed milk and a generous layer of silky foam.</p><div class="menu-card-footer"><span class="menu-card-price">R45</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Boba tea/biscoff boba.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Biscoff Boba</h3><p class="menu-card-desc">Spiced Biscoff spread blended into creamy milk tea with chewy boba pearls.</p><div class="menu-card-footer"><span class="menu-card-price">R80</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Sushi sandwhich.webp" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Sushi</p><h3 class="menu-card-title">Sushi Sandwich</h3><p class="menu-card-desc">Pressed sushi rice layered with fresh salmon, avocado and sesame.</p><div class="menu-card-footer"><span class="menu-card-price">R135</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Cold drinks/strawberry milkshake.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Strawberry Milkshake</h3><p class="menu-card-desc">Fresh strawberries blended with vanilla ice cream and chilled whole milk.</p><div class="menu-card-footer"><span class="menu-card-price">R65</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/noodle/pork fried noodle.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Noodles</p><h3 class="menu-card-title">Pork Fried Noodle</h3><p class="menu-card-desc">Wok-charred noodles with pork belly, chilli oil and crispy shallots.</p><div class="menu-card-footer"><span class="menu-card-price">R110</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Boba tea/cookies and cream boba.webp" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Cookies and Cream Boba</h3><p class="menu-card-desc">Velvety cookies and cream blended with boba pearls for an indulgent treat.</p><div class="menu-card-footer"><span class="menu-card-price">R80</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Other foods/chicken dumpling.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Others</p><h3 class="menu-card-title">Chicken Dumpling</h3><p class="menu-card-desc">Juicy chicken and lemongrass dumplings steamed to perfection, with chilli dip.</p><div class="menu-card-footer"><span class="menu-card-price">R95</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/hot drinks/mocha coffee.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Hot Drinks</p><h3 class="menu-card-title">Mocha</h3><p class="menu-card-desc">Rich espresso with dark chocolate and steamed milk, finished with cocoa dust.</p><div class="menu-card-footer"><span class="menu-card-price">R50</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Cold drinks/coffee milkshake.webp" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Coffee Milkshake</h3><p class="menu-card-desc">Cold brew coffee blended with vanilla ice cream for a caffeinated treat.</p><div class="menu-card-footer"><span class="menu-card-price">R70</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Boba tea/creme buhle boba.webp" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Creme Brulee Boba</h3><p class="menu-card-desc">Custard-smooth milk tea with caramelised sugar notes and classic boba pearls.</p><div class="menu-card-footer"><span class="menu-card-price">R85</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/noodle/prawn udon noodle.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Noodles</p><h3 class="menu-card-title">Prawn Udon</h3><p class="menu-card-desc">Plump tiger prawns in a miso-infused broth with thick udon and sesame oil.</p><div class="menu-card-footer"><span class="menu-card-price">R135</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Cold drinks/peach freezo.webp" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Peach Freezo</h3><p class="menu-card-desc">Sweet peach and crushed ice blended into a light, fruity frozen slush.</p><div class="menu-card-footer"><span class="menu-card-price">R50</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/sushi roll.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Sushi</p><h3 class="menu-card-title">House Sushi Roll</h3><p class="menu-card-desc">Our signature roll with tuna, cucumber and spicy mayo, finished with tobiko.</p><div class="menu-card-footer"><span class="menu-card-price">R145</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Boba tea/pistacio boba.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Pistachio Boba</h3><p class="menu-card-desc">Lush pistachio milk tea with earthy sweetness and tapioca pearls.</p><div class="menu-card-footer"><span class="menu-card-price">R85</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Other foods/pork dumpling.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Others</p><h3 class="menu-card-title">Pork Dumpling</h3><p class="menu-card-desc">Classic pork and cabbage dumplings, pan-seared golden with a soy dipping sauce.</p><div class="menu-card-footer"><span class="menu-card-price">R90</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/hot drinks/double shot espresso coffee.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Hot Drinks</p><h3 class="menu-card-title">Double Espresso</h3><p class="menu-card-desc">Two concentrated shots of our house espresso blend - intense and smooth.</p><div class="menu-card-footer"><span class="menu-card-price">R38</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Cold drinks/chocolate freezo.webp" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Chocolate Freezo</h3><p class="menu-card-desc">Blended ice and chocolate syrup, frozen to a smooth, refreshing slush.</p><div class="menu-card-footer"><span class="menu-card-price">R55</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Boba tea/strawberry boba.webp" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Strawberry Boba</h3><p class="menu-card-desc">Fresh strawberry milk tea blended with sweet tapioca pearls and a hint of vanilla.</p><div class="menu-card-footer"><span class="menu-card-price">R75</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/noodle/beef udon noodle.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Noodles</p><h3 class="menu-card-title">Beef Udon</h3><p class="menu-card-desc">Thick udon in a rich dashi broth with slow-braised beef and soft-poached egg.</p><div class="menu-card-footer"><span class="menu-card-price">R125</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Cold drinks/salted caramel milkshake.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Salted Caramel Shake</h3><p class="menu-card-desc">House caramel sauce with sea salt, blended with ice cream into a thick shake.</p><div class="menu-card-footer"><span class="menu-card-price">R70</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Other foods/chicken noodle soup.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Others</p><h3 class="menu-card-title">Chicken Noodle Soup</h3><p class="menu-card-desc">Slow-cooked chicken broth with thin egg noodles, ginger and spring onion.</p><div class="menu-card-footer"><span class="menu-card-price">R100</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Boba tea/tiramsu boba.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Boba Tea</p><h3 class="menu-card-title">Tiramisu Boba</h3><p class="menu-card-desc">Espresso-kissed tiramisu milk tea with mascarpone notes and boba pearls.</p><div class="menu-card-footer"><span class="menu-card-price">R85</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Cold drinks/coffee freezo.webp" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Coffee Freezo</h3><p class="menu-card-desc">Espresso and crushed ice blended into a bold, energising frozen drink.</p><div class="menu-card-footer"><span class="menu-card-price">R55</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/noodle/chicken fried noodle.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Noodles</p><h3 class="menu-card-title">Chicken Fried Noodle</h3><p class="menu-card-desc">Stir-fried noodles with marinated chicken, bok choy and a light soy glaze.</p><div class="menu-card-footer"><span class="menu-card-price">R105</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Other foods/prawn dumpling.webp" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Others</p><h3 class="menu-card-title">Prawn Dumpling</h3><p class="menu-card-desc">Delicate prawn har gow steamed in translucent rice wrappers with ginger and chive.</p><div class="menu-card-footer"><span class="menu-card-price">R105</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Cold drinks/coke.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Coke</h3><p class="menu-card-desc">Ice-cold Coca-Cola served in a chilled glass with a slice of lemon.</p><div class="menu-card-footer"><span class="menu-card-price">R30</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/noodle/veggie udon noodles.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Noodles</p><h3 class="menu-card-title">Veggie Udon</h3><p class="menu-card-desc">Garden vegetable udon in a light kombu broth with tofu and spinach.</p><div class="menu-card-footer"><span class="menu-card-price">R95</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Cold drinks/salted caramel freezo.jpg" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Salted Caramel Freezo</h3><p class="menu-card-desc">Caramel and sea salt blended with ice into a frozen, indulgent slush.</p><div class="menu-card-footer"><span class="menu-card-price">R55</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Cold drinks/fanta.avif" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Fanta</h3><p class="menu-card-desc">Chilled Fanta Orange served over ice - fruity, fizzy and refreshing.</p><div class="menu-card-footer"><span class="menu-card-price">R30</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+        <div class="menu-card" aria-hidden="true"><div class="menu-card-img"><img src="images/Cold drinks/appletiser.webp" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div class="menu-card-body"><p class="menu-card-tag">Cold Drinks</p><h3 class="menu-card-title">Appletiser</h3><p class="menu-card-desc">Sparkling apple juice - crisp, elegant and naturally refreshing.</p><div class="menu-card-footer"><span class="menu-card-price">R35</span><a href="menu.html" class="btn btn-ghost btn-sm">Order &rarr;</a></div></div></div>
+      </div>
+    </div>
+    <div class="menu-cta">
+      <a href="menu.html" class="btn-menu-view"><span>View Full Menu</span></a>
+    </div>
+  </section>
+
+  <section class="about-strip">
+    <div class="about-inner">
+      <div class="about-photo" data-reveal="slide-left">
+        <img src="images/hero photo.avif" alt="Tea café interior">
+      </div>
+      <div>
+        <p class="section-eyebrow" data-reveal="fade-in">Our Story</p>
+        <h2 class="section-heading" data-reveal style="--reveal-delay:80ms">Steeped in craft, <em>rooted in ritual</em></h2>
+        <div class="section-rule" data-reveal="fade-in" style="--reveal-delay:120ms"></div>
+        <p class="about-body" data-reveal style="--reveal-delay:160ms">Chá House was born from a deep reverence for the art of tea. We work directly with small farms in Japan's Uji region, Taiwan's Alishan mountains, Yunnan province, and the Darjeeling foothills — sourcing teas that tell a story. Every cup is brewed with intention, every pairing considered with care.</p>
+        <a href="about.html" class="btn btn-inverse btn-lg" data-reveal style="--reveal-delay:220ms">Meet Our Team</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="stats-band">
+    <div class="stats-inner">
+      <div class="stat-item"><div class="stat-num">12</div><div class="stat-label">Years Serving</div></div>
+      <div class="stat-item"><div class="stat-num">80+</div><div class="stat-label">Tea Varieties</div></div>
+      <div class="stat-item"><div class="stat-num">4.9</div><div class="stat-label">Google Rating</div></div>
+      <div class="stat-item"><div class="stat-num">3×</div><div class="stat-label">Award-Winning</div></div>
+    </div>
+  </div>
+
+  <section class="testi-section">
+    <div class="testi-inner">
+      <div class="testi-header">
+        <p class="section-eyebrow" data-reveal="fade-in">Guest Reviews</p>
+        <h2 class="section-heading" data-reveal style="--reveal-delay:80ms">What our guests <em>say</em></h2>
+      </div>
+      <div class="testi-grid">
+        <div class="testi-card" data-reveal>
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-quote">The Matcha Ceremony Set was the most mindful 20 minutes of my week. The wagashi were delicate and the matcha itself was extraordinary — no bitterness at all.</p>
+          <div class="testi-author"><div class="testi-avatar"><img src="images/Sophie.avif" alt="Sophie van der Berg"></div><div><p class="testi-name">Sophie van der Berg</p><p class="testi-meta">Google Review</p></div></div>
+        </div>
+        <div class="testi-card" data-reveal style="--reveal-delay:80ms">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-quote">I did the Oolong Flight and it completely changed how I think about tea. The pairings were inspired. Staff knowledge is genuinely impressive.</p>
+          <div class="testi-author"><div class="testi-avatar"><img src="images/Marcus.avif" alt="Marcus Dlamini"></div><div><p class="testi-name">Marcus Dlamini</p><p class="testi-meta">TripAdvisor</p></div></div>
+        </div>
+        <div class="testi-card" data-reveal style="--reveal-delay:160ms">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-quote">The Earl Grey Scones are the best in Cape Town, full stop. The bergamot curd alone is worth the trip. We come every Sunday morning.</p>
+          <div class="testi-author"><div class="testi-avatar"><img src="images/Aisha.avif" alt="Aisha Petersen"></div><div><p class="testi-name">Aisha Petersen</p><p class="testi-meta">Eat Out</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="cta-inner">
+      <p class="cta-eyebrow" data-reveal="fade-in">Reserve Your Seat</p>
+      <h2 class="cta-heading" data-reveal style="--reveal-delay:80ms">A moment of calm <em>awaits</em></h2>
+      <p class="cta-sub" data-reveal style="--reveal-delay:140ms">Tables for our weekend Matcha Ceremony sets and Oolong Flights fill up fast. Book ahead to avoid disappointment.</p>
+      <div class="cta-actions" data-reveal style="--reveal-delay:200ms">
+        <a href="contact.html" class="btn btn-inverse btn-lg">Book a Seat</a>
+        <a href="menu.html" class="btn btn-lg" style="background:transparent;border:1.5px solid rgba(255,255,255,0.4);color:#fff;">View Full Menu</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="footer-logo">Chá House</span>
+        <span class="footer-tagline">Artisan Tea Café &bull; Est. 2012</span>
+      </div>
+      <div class="footer-right">
+        <span class="footer-copy">&copy; 2024 Chá House. All rights reserved.</span>
+        <span class="footer-attr">Built by <span>StudioDesk</span></span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const els = document.querySelectorAll('[data-reveal]');
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-visible'); obs.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    els.forEach(el => obs.observe(el));
+
+    // Stat numbers: curtain pulls down, then count up left to right staggered
+    const statNums = document.querySelectorAll('.stat-num');
+    const statBand = document.querySelector('.stats-band');
+
+    function countUp(el, target, suffix, duration) {
+      const start = performance.now();
+      const isFloat = target % 1 !== 0;
+      el.textContent = '0' + suffix;
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = isFloat
+          ? (eased * target).toFixed(1)
+          : Math.round(eased * target);
+        el.textContent = current + suffix;
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    const statObs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const parsed = Array.from(statNums).map(el => {
+            const match = el.textContent.trim().match(/^([\d.]+)(.*)$/);
+            return match ? { target: parseFloat(match[1]), suffix: match[2] || '' } : null;
+          });
+          parsed.forEach((data, i) => {
+            if (data) statNums[i].textContent = '0' + data.suffix;
+          });
+          statNums.forEach(el => el.classList.add('stat-revealed'));
+          parsed.forEach((data, i) => {
+            if (!data) return;
+            setTimeout(() => {
+              countUp(statNums[i], data.target, data.suffix, 1000);
+            }, 1800 + (i * 300));
+          });
+          statObs.unobserve(statBand);
+        }
+      });
+    }, { threshold: 0.3 });
+    statObs.observe(statBand);
+  </script>
+
+  <!-- Cursive write-on for hero wordmark -->
+  <script>
+    (function () {
+      'use strict';
+      var container = document.getElementById('restaurant-wordmark');
+      if (!container) return;
+      var strokeEl = container.querySelector('.wm-stroke');
+      var fillEl   = container.querySelector('.wm-fill');
+      if (!strokeEl || !fillEl) return;
+
+      function animate() {
+        var len = (typeof strokeEl.getComputedTextLength === 'function')
+          ? strokeEl.getComputedTextLength() : 4000;
+        var dash = Math.ceil(len * 1.1);
+        strokeEl.style.strokeDasharray  = dash;
+        strokeEl.style.strokeDashoffset = dash;
+        strokeEl.classList.add('is-drawing');
+        fillEl.classList.add('is-drawing');
+      }
+
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            setTimeout(animate, 200);
+            io.unobserve(container);
+          }
+        });
+      }, { threshold: 0.1 });
+      io.observe(container);
+    })();
+  </script>
+</body>
+</html>
+
