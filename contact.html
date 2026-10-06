@@ -1,642 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contact & Reservations — Chá House</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,300;0,6..96,400;0,6..96,600;1,6..96,300;1,6..96,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --color-bg: #112018; --color-bg-alt: #0F1C10; --color-surface: #16221A;
-      --color-primary: #132010; --color-primary-deep: #0C1510;
-      --color-teal: #111D16; --color-teal-light: #1A2B1F;
-      --color-jade: #C9A84C; --color-jade-light: #E0C06A;
-      --color-gold: #C9A84C; --color-gold-light: #E0C06A;
-      --color-taken: #B84040; --color-available: #5A8A6A;
-      --color-text: #F0EDE4; --color-text-muted: #B8C4B0; --color-text-faint: #5A7060;
-      --color-border: #1E3028;
-      --font-display: 'Bodoni Moda', Georgia, serif; --font-body: 'DM Sans', system-ui, sans-serif; --font-mono: 'DM Mono', monospace;
-      --radius-pill: 999px; --radius-md: 8px; --radius-lg: 16px;
-      --shadow-sm: 0 1px 4px rgba(0,0,0,0.07); --shadow-md: 0 8px 32px rgba(0,0,0,0.12); --shadow-lg: 0 20px 60px rgba(0,0,0,0.18);
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; } html, body { overflow-x: hidden; }
-    body { background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); font-weight: 300; line-height: 1.7; -webkit-font-smoothing: antialiased; padding-top: 64px; }
-    a { color: inherit; text-decoration: none; } ul { list-style: none; }
-    .wrap { max-width: 1200px; margin: 0 auto; padding: 0 clamp(20px,5vw,80px); }
-    .js [data-reveal] { opacity: 0; transform: translateY(28px); transition: opacity 0.55s cubic-bezier(0,0,0.2,1) var(--reveal-delay,0ms), transform 0.55s cubic-bezier(0,0,0.2,1) var(--reveal-delay,0ms); }
-    .js [data-reveal="fade-in"] { transform: none; }
-    .js [data-reveal="slide-right"] { transform: translateX(40px); }
-    .js [data-reveal].is-visible { opacity: 1; transform: none; }
-    @media (prefers-reduced-motion: reduce) { .js [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; } }
-
-    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 0 clamp(20px,5vw,80px); background: var(--color-primary); box-shadow: 0 4px 24px rgba(0,0,0,0.35); border-bottom: 1px solid rgba(184,149,90,0.30); }
-    .nav-inner { max-width: 1200px; margin: 0 auto; height: 64px; display: flex; align-items: center; justify-content: space-between; }
-    .nav-logo { font-family: var(--font-display); font-size: 20px; font-weight: 400; letter-spacing: 4px; text-transform: uppercase; color: var(--color-gold-light); text-shadow: 0 0 18px rgba(201,168,76,0.5), 0 0 40px rgba(201,168,76,0.2); }
-    .nav-links { display: flex; gap: 32px; margin-left: auto; }
-    .nav-links a { font-family: var(--font-mono); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--color-gold-light); transition: color 0.15s; }
-    .nav-links a:hover, .nav-links a.active { color: #fff; }
-    @media (max-width: 768px) { .nav-links { gap: 16px; } .nav-links a { font-size: 9px; letter-spacing: 1px; } }
-
-    .page-hero { padding: 80px clamp(20px,5vw,80px) 64px; background: var(--color-primary); }
-    .page-hero-inner { max-width: 1200px; margin: 0 auto; }
-    .page-eyebrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 12px; }
-    .page-title { font-family: var(--font-display); font-size: clamp(40px,6vw,80px); font-weight: 300; color: #fff; line-height: 1; letter-spacing: -0.01em; margin-bottom: 16px; }
-    .page-title em { font-style: italic; color: var(--color-gold-light); }
-    .page-sub { font-size: 15px; font-weight: 300; color: rgba(255,255,255,0.65); max-width: 520px; line-height: 1.8; }
-
-    /* CONTACT GRID */
-    .contact-section { position: relative; overflow: hidden; background: var(--color-primary); padding: 0 clamp(20px,5vw,80px) clamp(60px,7vw,100px); }
-    .contact-section::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(184,149,90,0.08) 0%, transparent 60%); pointer-events: none; }
-    .contact-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 480px; gap: 64px; align-items: start; position: relative; z-index: 1; }
-
-    /* Left */
-    .contact-left { padding-top: 8px; }
-    .contact-heading { font-family: var(--font-display); font-size: clamp(32px,4vw,52px); font-weight: 300; color: #fff; line-height: 1.15; margin-bottom: 16px; }
-    .contact-heading em { font-style: italic; color: var(--color-gold-light); }
-    .contact-rule { width: 48px; height: 1px; background: var(--color-gold); margin-bottom: 24px; }
-    .contact-intro { font-size: 15px; font-weight: 300; color: rgba(255,255,255,0.6); line-height: 1.8; margin-bottom: 44px; max-width: 380px; }
-    .contact-details { display: flex; flex-direction: column; gap: 24px; margin-bottom: 40px; }
-    .contact-detail { display: flex; align-items: flex-start; gap: 16px; }
-    .contact-detail-icon { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .contact-detail-label { font-family: var(--font-mono); font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 2px; color: var(--color-gold-light); }
-    .contact-detail-value { font-size: 14px; font-weight: 300; color: rgba(255,255,255,0.8); }
-    .contact-detail-value a { color: rgba(255,255,255,0.8); transition: color 0.15s; }
-    .contact-detail-value a:hover { color: #fff; }
-    .contact-socials { display: flex; gap: 12px; }
-    .social-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.6); transition: border-color 0.2s, color 0.2s; }
-    .social-btn:hover { border-color: var(--color-gold-light); color: var(--color-gold-light); }
-
-    /* Form */
-    .contact-form-card {
-      background: #111D16;
-      border: 1px solid rgba(201,168,76,0.2);
-      border-radius: var(--radius-lg);
-      padding: 40px 36px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-      position: relative;
-      overflow: hidden;
-    }
-    .contact-form-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: url('images/liquid gif.jpg') center center / cover no-repeat;
-      opacity: 0.28;
-      z-index: 0;
-      border-radius: var(--radius-lg);
-    }
-    .contact-form-card > * { position: relative; z-index: 1; }
-    .contact-form-card h3 { font-family: var(--font-display); font-size: 30px; font-weight: 400; color: #fff; margin-bottom: 6px; }
-    .contact-form-card > p { font-size: 13px; color: var(--color-text-muted); margin-bottom: 28px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-    .form-field { display: flex; flex-direction: column; margin-bottom: 12px; }
-    .form-field label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--color-gold-light); margin-bottom: 7px; }
-    .form-field input, .form-field select, .form-field textarea {
-      padding: 12px 14px;
-      border: 1px solid rgba(201,168,76,0.2);
-      border-radius: var(--radius-md);
-      background: rgba(0,0,0,0.3);
-      font-family: var(--font-body);
-      font-size: 14px;
-      font-weight: 300;
-      color: #fff;
-      outline: none;
-      transition: border-color 0.2s, background 0.2s;
-      resize: none;
-      -webkit-appearance: none;
-    }
-    .form-field input::placeholder, .form-field textarea::placeholder { color: rgba(255,255,255,0.3); }
-    .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: var(--color-gold); background: rgba(0,0,0,0.45); }
-    .form-field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C9A84C' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
-    .form-field select option { background: #111D16; color: #fff; }
-    .form-field textarea { height: 90px; }
-    .form-consent { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; }
-    .form-consent input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; accent-color: var(--color-gold); }
-    .form-consent label { font-size: 11px; color: rgba(255,255,255,0.5); line-height: 1.5; }
-    .form-submit {
-      width: 100%; padding: 15px;
-      background: transparent;
-      color: var(--color-gold-light);
-      border: 1.5px solid var(--color-gold);
-      border-radius: var(--radius-pill);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      transition: color 0.3s ease;
-      box-shadow: 0 0 8px 2px rgba(201,168,76,0.15);
-    }
-    .form-submit::before { content: ''; position: absolute; inset: 0; background: var(--color-gold); transform: scaleX(0); transform-origin: left; transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); z-index: 0; }
-    .form-submit span { position: relative; z-index: 1; }
-    .form-submit:hover::before { transform: scaleX(1); }
-    .form-submit:hover { color: #0A0700; box-shadow: 0 0 24px 6px rgba(201,168,76,0.4); }
-    .form-submit:active { transform: scale(0.98); }
-    .form-note { text-align: center; margin-top: 10px; font-size: 11px; color: rgba(255,255,255,0.3); }
-
-    /* FLOOR PLAN */
-    .floorplan-wrap { margin-top: 36px; }
-    .floorplan-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
-    .floorplan-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--color-gold-light); }
-    .floorplan-legend { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 8px; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.45); }
-    .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-    .legend-dot.available { background: rgba(184,149,90,0.5); border: 1px solid #C9A96E; }
-    .legend-dot.taken { background: rgba(180,60,50,0.55); border: 1px solid #D05040; }
-    .legend-dot.selected { background: rgba(184,149,90,0.6); border: 1px solid var(--color-gold-light); }
-    .floorplan-canvas { position: relative; background: rgba(28,26,24,0.90); border: 1px solid rgba(184,149,90,0.30); border-radius: 10px; overflow: hidden; }
-    .floorplan-canvas svg { display: block; width: 100%; height: auto; }
-    .floorplan-hint { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-top: 10px; text-align: center; transition: color 0.2s; }
-    .floorplan-hint.has-selection { color: var(--color-gold-light); }
-
-    /* SVG table states via JS-toggled classes */
-    .fp-room-label { font-family: 'DM Mono', monospace; font-size: 7px; fill: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; }
-    .fp-wall-label { font-family: 'DM Mono', monospace; font-size: 7px; fill: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 1.5px; }
-    .fp-table-num { font-family: 'DM Mono', monospace; font-size: 8px; fill: rgba(255,255,255,0.9); font-weight: 500; pointer-events: none; }
-    .fp-chair { fill: rgba(255,255,255,0.1); }
-
-    /* Available table — antique gold */
-    .fp-table rect:first-of-type { fill: rgba(184,149,90,0.22); stroke: #C9A96E; stroke-width: 1.4; transition: fill 0.2s, stroke 0.2s; cursor: pointer; }
-    .fp-table .fp-chair { fill: rgba(201,169,110,0.3); transition: fill 0.2s; }
-    .fp-table .fp-table-num { fill: #E8D4A8; }
-    /* Taken — terracotta red */
-    .fp-table[data-taken="true"] rect:first-of-type { fill: rgba(180,60,50,0.22); stroke: #D05040; stroke-width: 1.4; cursor: not-allowed; }
-    .fp-table[data-taken="true"] .fp-table-num { fill: #E89080; }
-    .fp-table[data-taken="true"] .fp-chair { fill: rgba(208,80,64,0.2); }
-    /* Hover (available only) — gold warm-up */
-    .fp-table.fp-hover rect:first-of-type { fill: rgba(201,169,110,0.38); stroke: #D4B878; stroke-width: 1.8; }
-    .fp-table.fp-hover .fp-chair { fill: rgba(201,169,110,0.30); }
-    .fp-table.fp-hover .fp-table-num { fill: #fff; }
-    /* Selected — solid gold */
-    .fp-table.fp-selected rect:first-of-type { fill: rgba(184,149,90,0.55); stroke: var(--color-gold-light); stroke-width: 2.2; }
-    .fp-table.fp-selected .fp-chair { fill: rgba(184,149,90,0.40); }
-    .fp-table.fp-selected .fp-table-num { fill: #fff; }
-
-    /* Tooltip */
-    .fp-tooltip { position: absolute; pointer-events: none; background: var(--color-primary-deep); border: 1px solid rgba(184,149,90,0.45); border-radius: 6px; padding: 8px 12px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; color: #fff; white-space: nowrap; opacity: 0; transition: opacity 0.15s; z-index: 10; }
-    .fp-tooltip.visible { opacity: 1; }
-    .fp-tooltip strong { display: block; font-size: 10px; color: var(--color-gold-light); margin-bottom: 2px; letter-spacing: 1.5px; }
-
-    /* HOURS SECTION */
-    .hours-section { padding: clamp(60px,7vw,100px) clamp(20px,5vw,80px); background: var(--color-bg-alt); }
-    .hours-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
-    .hours-eyebrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--color-primary); margin-bottom: 12px; }
-    .hours-heading { font-family: var(--font-display); font-size: clamp(28px,3.5vw,44px); font-weight: 300; color: var(--color-text); margin-bottom: 32px; }
-    .hours-heading em { font-style: italic; color: var(--color-primary); }
-    .hours-table { width: 100%; border-collapse: collapse; }
-    .hours-table tr { border-bottom: 1px solid var(--color-border); }
-    .hours-table td { padding: 14px 0; font-size: 14px; }
-    .hours-table td:first-child { color: var(--color-text-muted); font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; }
-    .hours-table td:last-child { text-align: right; font-weight: 400; color: var(--color-text); }
-    .hours-note { font-size: 12px; color: var(--color-text-faint); margin-top: 16px; }
-    .map-placeholder { height: 320px; border-radius: var(--radius-lg); overflow: hidden; background: var(--color-border); display: flex; align-items: center; justify-content: center; font-size: 56px; box-shadow: var(--shadow-sm); }
-
-    footer { background: #0E0D0C; padding: 40px clamp(20px,5vw,80px); }
-    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; }
-    .footer-brand { display: flex; flex-direction: column; gap: 6px; }
-    .footer-logo { font-family: var(--font-display); font-size: 20px; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; color: rgba(255,255,255,0.7); }
-    .footer-tagline { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.25); }
-    .footer-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-    .footer-copy { font-family: var(--font-mono); font-size: 9px; color: rgba(255,255,255,0.2); }
-    .footer-attr { font-family: var(--font-mono); font-size: 9px; color: rgba(255,255,255,0.2); }
-    .footer-attr span { color: #378ADD; }
-    @media (max-width: 1024px) { .contact-inner { grid-template-columns: 1fr; } .hours-inner { grid-template-columns: 1fr; } }
-    @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .footer-inner { grid-template-columns: 1fr; text-align: center; } .footer-nav { justify-content: center; flex-wrap: wrap; } .footer-right { align-items: center; } }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact — Friedland Hart Solomon &amp; Nicolson · Pretoria</title>
+<meta name="description" content="Contact Friedland Hart Solomon & Nicolson — Monument Office Park, Pretoria. Tel 012 424 0200.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,600;1,6..96,400;1,6..96,600;1,6..96,700&family=Barlow+Semi+Condensed:wght@300;400;500;600&family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./redesign.css">
 </head>
-<body class="js">
-  <nav>
-    <div class="nav-inner">
-      <a href="index.html" class="nav-logo">Chá House</a>
-      <div class="nav-links">
-        <a href="index.html">Home</a>
-        <a href="menu.html">Menu</a>
-        <a href="about.html">About</a>
-        <a href="contact.html" class="active">Contact</a>
-      </div>
-    </div>
-  </nav>
+<body>
+<canvas id="grain"></canvas>
 
-  <div class="page-hero">
-    <div class="page-hero-inner">
-      <p class="page-eyebrow" data-reveal="fade-in">Find Us</p>
-      <h1 class="page-title" data-reveal style="--reveal-delay:80ms">Visit & <em>Reserve</em></h1>
-      <p class="page-sub" data-reveal style="--reveal-delay:140ms">Join us for a quiet cup, a ceremony set, or a tasting flight. We'd love to welcome you.</p>
+<header id="hdr">
+  <div class="wrap navrow">
+    <a class="mark" href="./index.html"><span class="fhsn">fhsn</span><span class="full">Friedland Hart Solomon &amp; Nicolson</span></a>
+    <nav id="nav"><ul>
+      <li><a href="./index.html">Home</a></li>
+      <li><a href="./history.html">History</a></li>
+      <li><a href="./people.html">Our People</a></li>
+      <li><a href="./services.html">Professional Services</a></li>
+      <li><a href="./news.html">News</a></li>
+      <li><a href="./contact.html" class="active">Contact</a></li>
+    </ul></nav>
+    <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false">☰</button>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <p class="eyebrow">Contact</p>
+    <h1>Tell us what <em>you're facing.</em></h1>
+    <p class="lead">Call the switchboard and ask for the department, or email the partner directly. We'll tell you honestly whether it's a matter we should take.</p>
+  </div>
+</section>
+
+<section id="contact" class="pad">
+  <div class="wrap cgrid">
+    <div>
+      <p class="eyebrow reveal">Send an enquiry</p>
+      <form class="form reveal" action="mailto:millie@fhsn.co.za" method="post" enctype="text/plain">
+        <div class="field"><label for="f-name">Name</label><input id="f-name" name="name" type="text" required></div>
+        <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" required></div>
+        <div class="field"><label for="f-phone">Phone (optional)</label><input id="f-phone" name="phone" type="tel"></div>
+        <div class="field"><label for="f-dept">Department</label>
+          <select id="f-dept" name="department">
+            <option value="" disabled selected>Select a department</option>
+            <option>Companies</option><option>Litigation</option><option>Conveyancing</option><option>Administration of Estates</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field"><label for="f-msg">Message</label><textarea id="f-msg" name="message" rows="5"></textarea></div>
+        <button type="submit" class="btn btn--solid submit"><span class="fill"></span><span>Send enquiry</span><span class="arrow">→</span></button>
+      </form>
+    </div>
+    <aside>
+      <p class="eyebrow reveal">Chambers</p>
+      <div class="detail reveal"><span class="k">Physical address</span><span class="v">4-301 Monument Office Park<br>79 Steenbok Ave, Monument Park<br>Pretoria</span></div>
+      <div class="detail reveal"><span class="k">Postal address</span><span class="v">P.O. Box 645 &amp; 1003<br>Pretoria 0001 · Docex 11, Pretoria</span></div>
+      <div class="detail reveal"><span class="k">Telephone</span><span class="v"><a href="tel:+27124240200">012 424 0200</a></span></div>
+      <div class="detail reveal"><span class="k">Fax</span><span class="v">086 687 3984</span></div>
+      <div class="detail reveal"><span class="k">Email</span><span class="v"><a href="mailto:millie@fhsn.co.za">millie@fhsn.co.za</a></span></div>
+      <div class="detail reveal"><span class="k">Practice</span><span class="v">Attorneys · Notaries · Conveyancers · Administrators of Estates</span></div>
+    </aside>
+  </div>
+  <div class="wrap map-wrap reveal">
+    <p class="eyebrow">Find us</p>
+    <div class="map-embed">
+      <iframe
+        title="Friedland Hart Solomon &amp; Nicolson — 4-301 Monument Office Park, 79 Steenbok Ave, Monument Park, Pretoria"
+        src="https://www.google.com/maps?q=4-301%20Monument%20Office%20Park%2C%2079%20Steenbok%20Ave%2C%20Monument%20Park%2C%20Pretoria&amp;output=embed"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        allowfullscreen></iframe>
     </div>
   </div>
+</section>
 
-  <section class="contact-section">
-    <div class="contact-inner">
-      <div class="contact-left" data-reveal>
-        <h2 class="contact-heading">Let's make your <em>morning</em> special</h2>
-        <div class="contact-rule"></div>
-        <p class="contact-intro">Weekend Matcha Ceremony sets and Oolong Flights fill up fast — we recommend booking at least 48 hours ahead. Walk-ins always welcome for regular table seating.</p>
-        <div class="contact-details">
-          <div class="contact-detail">
-            <div class="contact-detail-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" color="rgba(255,255,255,0.7)"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3-8.59A2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-            </div>
-            <div>
-              <p class="contact-detail-label">Phone</p>
-              <p class="contact-detail-value"><a href="tel:+27214223344">+27 21 422 3344</a></p>
-            </div>
-          </div>
-          <div class="contact-detail">
-            <div class="contact-detail-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" color="rgba(255,255,255,0.7)"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            </div>
-            <div>
-              <p class="contact-detail-label">Email</p>
-              <p class="contact-detail-value"><a href="mailto:hello@chahouse.co.za">hello@chahouse.co.za</a></p>
-            </div>
-          </div>
-          <div class="contact-detail">
-            <div class="contact-detail-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" color="rgba(255,255,255,0.7)"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            </div>
-            <div>
-              <p class="contact-detail-label">Address</p>
-              <p class="contact-detail-value"><a href="https://maps.google.com/?q=Heritage+Square+Cape+Town" target="_blank" rel="noopener">Heritage Square, 100 Shortmarket Street, Cape Town, 8001</a></p>
-            </div>
-          </div>
-        </div>
-        <div class="contact-socials">
-          <a href="#" class="social-btn" aria-label="Instagram">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-          </a>
-          <a href="#" class="social-btn" aria-label="Facebook">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-          </a>
-          <a href="#" class="social-btn" aria-label="TripAdvisor">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-          </a>
-        </div>
+<footer>
+  <div class="wrap frow">
+    <span>© 2026 Friedland Hart Solomon &amp; Nicolson</span>
+    <span>Monument Office Park, Pretoria · <a href="tel:+27124240200">012 424 0200</a></span>
+    <span>Attorneys · Notaries · Conveyancers</span>
+  </div>
+</footer>
 
-        <!-- FLOOR PLAN -->
-        <div class="floorplan-wrap" data-reveal style="--reveal-delay:180ms">
-          <div class="floorplan-header">
-            <p class="floorplan-label">Select Your Table</p>
-            <div class="floorplan-legend">
-              <span class="legend-dot available"></span><span>Available</span>
-              <span class="legend-dot taken"></span><span>Taken</span>
-              <span class="legend-dot selected"></span><span>Your Pick</span>
-            </div>
-          </div>
-          <div class="floorplan-canvas">
-            <svg id="floor-svg" viewBox="0 0 380 310" xmlns="http://www.w3.org/2000/svg" aria-label="Restaurant floor plan">
-
-              <!-- Room outline -->
-              <rect x="8" y="8" width="364" height="294" rx="6" ry="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
-
-              <!-- Bar counter top-right -->
-              <rect x="260" y="20" width="100" height="34" rx="4" fill="rgba(201,168,76,0.18)" stroke="rgba(201,168,76,0.5)" stroke-width="1.2"/>
-              <text x="310" y="41" text-anchor="middle" class="fp-room-label">Tea Bar</text>
-
-              <!-- Kitchen bottom-right -->
-              <rect x="260" y="256" width="100" height="44" rx="4" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" stroke-width="1.2" stroke-dasharray="4 3"/>
-              <text x="310" y="281" text-anchor="middle" class="fp-room-label">Kitchen</text>
-
-              <!-- Entrance bottom-left -->
-              <rect x="16" y="264" width="68" height="30" rx="4" fill="rgba(255,255,255,0.04)" stroke="rgba(201,168,76,0.35)" stroke-width="1.2"/>
-              <text x="50" y="283" text-anchor="middle" class="fp-room-label">Entrance</text>
-
-              <!-- Window wall indicator top -->
-              <line x1="16" y1="14" x2="248" y2="14" stroke="rgba(255,255,255,0.22)" stroke-width="3" stroke-linecap="round"/>
-              <text x="132" y="26" text-anchor="middle" class="fp-wall-label">Window Wall</text>
-
-              <!-- TABLE GROUPS -->
-
-              <!-- Row 1 — Window tables (T1–T4, 2-seaters) -->
-              <g class="fp-table" data-table="T1" data-seats="2" data-zone="Window">
-                <rect x="28" y="40" width="42" height="32" rx="5"/>
-                <!-- chairs top -->
-                <rect x="34" y="31" width="12" height="8" rx="3" class="fp-chair"/>
-                <rect x="50" y="31" width="12" height="8" rx="3" class="fp-chair"/>
-                <!-- chairs bottom -->
-                <rect x="34" y="73" width="12" height="8" rx="3" class="fp-chair"/>
-                <rect x="50" y="73" width="12" height="8" rx="3" class="fp-chair"/>
-                <text x="49" y="61" text-anchor="middle" class="fp-table-num">T1</text>
-              </g>
-
-              <g class="fp-table" data-table="T2" data-seats="2" data-zone="Window">
-                <rect x="84" y="40" width="42" height="32" rx="5"/>
-                <rect x="90" y="31" width="12" height="8" rx="3" class="fp-chair"/>
-                <rect x="106" y="31" width="12" height="8" rx="3" class="fp-chair"/>
-                <rect x="90" y="73" width="12" height="8" rx="3" class="fp-chair"/>
-                <rect x="106" y="73" width="12" height="8" rx="3" class="fp-chair"/>
-                <text x="105" y="61" text-anchor="middle" class="fp-table-num">T2</text>
-              </g>
-
-              <g class="fp-table" data-table="T3" data-seats="2" data-zone="Window">
-                <rect x="140" y="40" width="42" height="32" rx="5"/>
-                <rect x="146" y="31" width="12" height="8" rx="3" class="fp-chair"/>
-                <rect x="162" y="31" width="12" height="8" rx="3" class="fp-chair"/>
-                <rect x="146" y="73" width="12" height="8" rx="3" class="fp-chair"/>
-                <rect x="162" y="73" width="12" height="8" rx="3" class="fp-chair"/>
-                <text x="161" y="61" text-anchor="middle" class="fp-table-num">T3</text>
-              </g>
-
-              <g class="fp-table" data-table="T4" data-seats="2" data-zone="Window" data-taken="true">
-                <rect x="196" y="40" width="42" height="32" rx="5"/>
-                <rect x="202" y="31" width="12" height="8" rx="3" class="fp-chair"/>
-                <rect x="218" y="31" width="12" height="8" rx="3" class="fp-chair"/>
-                <rect x="202" y="73" width="12" height="8" rx="3" class="fp-chair"/>
-                <rect x="218" y="73" width="12" height="8" rx="3" class="fp-chair"/>
-                <text x="217" y="61" text-anchor="middle" class="fp-table-num">T4</text>
-              </g>
-
-              <!-- Row 2 — Centre tables (T5–T7, 4-seaters) -->
-              <g class="fp-table" data-table="T5" data-seats="4" data-zone="Centre">
-                <rect x="28" y="118" width="52" height="44" rx="5"/>
-                <!-- chairs left -->
-                <rect x="17" y="124" width="10" height="12" rx="3" class="fp-chair"/>
-                <rect x="17" y="140" width="10" height="12" rx="3" class="fp-chair"/>
-                <!-- chairs right -->
-                <rect x="81" y="124" width="10" height="12" rx="3" class="fp-chair"/>
-                <rect x="81" y="140" width="10" height="12" rx="3" class="fp-chair"/>
-                <!-- chairs top/bottom -->
-                <rect x="34" y="107" width="12" height="10" rx="3" class="fp-chair"/>
-                <rect x="50" y="107" width="12" height="10" rx="3" class="fp-chair"/>
-                <rect x="34" y="163" width="12" height="10" rx="3" class="fp-chair"/>
-                <rect x="50" y="163" width="12" height="10" rx="3" class="fp-chair"/>
-                <text x="54" y="144" text-anchor="middle" class="fp-table-num">T5</text>
-              </g>
-
-              <g class="fp-table" data-table="T6" data-seats="4" data-zone="Centre" data-taken="true">
-                <rect x="104" y="118" width="52" height="44" rx="5"/>
-                <rect x="93" y="124" width="10" height="12" rx="3" class="fp-chair"/>
-                <rect x="93" y="140" width="10" height="12" rx="3" class="fp-chair"/>
-                <rect x="157" y="124" width="10" height="12" rx="3" class="fp-chair"/>
-                <rect x="157" y="140" width="10" height="12" rx="3" class="fp-chair"/>
-                <rect x="110" y="107" width="12" height="10" rx="3" class="fp-chair"/>
-                <rect x="126" y="107" width="12" height="10" rx="3" class="fp-chair"/>
-                <rect x="110" y="163" width="12" height="10" rx="3" class="fp-chair"/>
-                <rect x="126" y="163" width="12" height="10" rx="3" class="fp-chair"/>
-                <text x="130" y="144" text-anchor="middle" class="fp-table-num">T6</text>
-              </g>
-
-              <g class="fp-table" data-table="T7" data-seats="4" data-zone="Centre">
-                <rect x="180" y="118" width="52" height="44" rx="5"/>
-                <rect x="169" y="124" width="10" height="12" rx="3" class="fp-chair"/>
-                <rect x="169" y="140" width="10" height="12" rx="3" class="fp-chair"/>
-                <rect x="233" y="124" width="10" height="12" rx="3" class="fp-chair"/>
-                <rect x="233" y="140" width="10" height="12" rx="3" class="fp-chair"/>
-                <rect x="186" y="107" width="12" height="10" rx="3" class="fp-chair"/>
-                <rect x="202" y="107" width="12" height="10" rx="3" class="fp-chair"/>
-                <rect x="186" y="163" width="12" height="10" rx="3" class="fp-chair"/>
-                <rect x="202" y="163" width="12" height="10" rx="3" class="fp-chair"/>
-                <text x="206" y="144" text-anchor="middle" class="fp-table-num">T7</text>
-              </g>
-
-              <!-- Private booth left wall (T8–T9, 2-seaters banquette) -->
-              <g class="fp-table" data-table="T8" data-seats="2" data-zone="Private Booth">
-                <!-- banquette back wall -->
-                <rect x="16" y="198" width="6" height="44" rx="2" fill="rgba(201,168,76,0.25)" stroke="rgba(201,168,76,0.4)" stroke-width="1"/>
-                <rect x="24" y="200" width="40" height="40" rx="5"/>
-                <rect x="65" y="206" width="10" height="12" rx="3" class="fp-chair"/>
-                <rect x="65" y="222" width="10" height="12" rx="3" class="fp-chair"/>
-                <text x="44" y="224" text-anchor="middle" class="fp-table-num">T8</text>
-              </g>
-
-              <g class="fp-table" data-table="T9" data-seats="2" data-zone="Private Booth" data-taken="true">
-                <rect x="16" y="252" width="6" height="44" rx="2" fill="rgba(201,168,76,0.25)" stroke="rgba(201,168,76,0.4)" stroke-width="1"/>
-                <rect x="24" y="254" width="40" height="40" rx="5"/>
-                <rect x="65" y="260" width="10" height="12" rx="3" class="fp-chair"/>
-                <rect x="65" y="276" width="10" height="12" rx="3" class="fp-chair"/>
-                <text x="44" y="278" text-anchor="middle" class="fp-table-num">T9</text>
-              </g>
-
-              <!-- Large group table centre-bottom (T10, 6-seater) -->
-              <g class="fp-table" data-table="T10" data-seats="6" data-zone="Centre">
-                <rect x="112" y="210" width="120" height="48" rx="6"/>
-                <!-- top chairs -->
-                <rect x="120" y="199" width="14" height="10" rx="3" class="fp-chair"/>
-                <rect x="140" y="199" width="14" height="10" rx="3" class="fp-chair"/>
-                <rect x="160" y="199" width="14" height="10" rx="3" class="fp-chair"/>
-                <rect x="180" y="199" width="14" height="10" rx="3" class="fp-chair"/>
-                <rect x="200" y="199" width="14" height="10" rx="3" class="fp-chair"/>
-                <!-- bottom chairs -->
-                <rect x="120" y="259" width="14" height="10" rx="3" class="fp-chair"/>
-                <rect x="140" y="259" width="14" height="10" rx="3" class="fp-chair"/>
-                <rect x="160" y="259" width="14" height="10" rx="3" class="fp-chair"/>
-                <rect x="180" y="259" width="14" height="10" rx="3" class="fp-chair"/>
-                <rect x="200" y="259" width="14" height="10" rx="3" class="fp-chair"/>
-                <text x="172" y="239" text-anchor="middle" class="fp-table-num">T10</text>
-              </g>
-
-              <!-- Bar stools (decorative, not bookable) -->
-              <circle cx="271" cy="64" r="5" fill="none" stroke="rgba(201,168,76,0.3)" stroke-width="1.2"/>
-              <circle cx="287" cy="64" r="5" fill="none" stroke="rgba(201,168,76,0.3)" stroke-width="1.2"/>
-              <circle cx="303" cy="64" r="5" fill="none" stroke="rgba(201,168,76,0.3)" stroke-width="1.2"/>
-              <circle cx="319" cy="64" r="5" fill="none" stroke="rgba(201,168,76,0.3)" stroke-width="1.2"/>
-              <circle cx="335" cy="64" r="5" fill="none" stroke="rgba(201,168,76,0.3)" stroke-width="1.2"/>
-              <circle cx="351" cy="64" r="5" fill="none" stroke="rgba(201,168,76,0.3)" stroke-width="1.2"/>
-
-            </svg>
-
-            <!-- Tooltip -->
-            <div id="fp-tooltip" class="fp-tooltip" role="tooltip" aria-hidden="true"></div>
-          </div>
-          <p class="floorplan-hint" id="fp-hint">Hover a table to preview — click to select it for your visit</p>
-          <input type="hidden" id="selected-table" name="table">
-        </div>
-      </div>
-
-      <div class="contact-form-card" data-reveal="slide-right">
-        <h3>Book a Seat</h3>
-        <p>We'll confirm your reservation within 2 hours.</p>
-        <form id="reserve-form" novalidate>
-          <div class="form-row">
-            <div class="form-field"><label for="first">First Name</label><input type="text" id="first" placeholder="Amara" required></div>
-            <div class="form-field"><label for="last">Last Name</label><input type="text" id="last" placeholder="Dlamini" required></div>
-          </div>
-          <div class="form-row">
-            <div class="form-field"><label for="email">Email</label><input type="email" id="email" placeholder="amara@email.com" required></div>
-            <div class="form-field"><label for="phone">Phone</label><input type="tel" id="phone" placeholder="+27 82 000 0000"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-field"><label for="date">Date</label><input type="date" id="date" required></div>
-            <div class="form-field">
-              <label for="time">Time</label>
-              <select id="time" required>
-                <option value="" disabled selected>Select time</option>
-                <option>12:00</option><option>12:30</option><option>13:00</option><option>13:30</option>
-                <option>18:00</option><option>18:30</option><option>19:00</option><option>19:30</option>
-                <option>20:00</option><option>20:30</option><option>21:00</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="guests">Guests</label>
-              <select id="guests" required>
-                <option value="" disabled selected>Select guests</option>
-                <option>1 guest</option><option>2 guests</option><option>3 guests</option>
-                <option>4 guests</option><option>5 guests</option><option>6+ guests</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label for="occasion">Occasion</label>
-              <select id="occasion">
-                <option value="" disabled selected>Optional</option>
-                <option>Birthday</option><option>Anniversary</option>
-                <option>Business Dinner</option><option>Date Night</option><option>Other</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-field" id="table-field" style="display:none"><label>Selected Table</label><input type="text" id="table-display" readonly style="background:var(--color-bg-alt);cursor:default;color:var(--color-primary);font-family:var(--font-mono);font-size:11px;letter-spacing:1px;"></div>
-          <div class="form-field"><label for="notes">Special Requests</label><textarea id="notes" placeholder="Allergies, dietary requirements, seating preferences..."></textarea></div>
-          <div class="form-consent">
-            <input type="checkbox" id="consent" required>
-            <label for="consent">I agree to Chá House contacting me to confirm this reservation. We do not share your details with third parties.</label>
-          </div>
-          <button type="submit" class="form-submit"><span>Confirm Reservation</span></button>
-          <p class="form-note">No payment required to book. Confirmation sent by email.</p>
-        </form>
-      </div>
-    </div>
-  </section>
-
-  <section class="hours-section">
-    <div class="hours-inner">
-      <div>
-        <p class="hours-eyebrow" data-reveal="fade-in">When to Visit</p>
-        <h2 class="hours-heading" data-reveal style="--reveal-delay:80ms">Opening <em>Hours</em></h2>
-        <table class="hours-table" data-reveal style="--reveal-delay:140ms">
-          <tr><td>Monday – Thursday</td><td>12:00 – 22:00</td></tr>
-          <tr><td>Friday – Saturday</td><td>12:00 – 23:30</td></tr>
-          <tr><td>Sunday</td><td>13:00 – 21:00</td></tr>
-          <tr><td>Public Holidays</td><td>Closed</td></tr>
-        </table>
-        <p class="hours-note" data-reveal="fade-in" style="--reveal-delay:200ms">Kitchen closes 45 minutes before closing time. Last reservations taken 1 hour before closing.</p>
-      </div>
-      <div class="map-placeholder" data-reveal="fade-in">
-        <!-- Replace with an embedded Google Map iframe -->
-        📍
-      </div>
-    </div>
-  </section>
-
-  <footer>
-    <div class="footer-inner">
-      <div class="footer-brand">
-        <span class="footer-logo">Chá House</span>
-        <span class="footer-tagline">Artisan Tea Café &bull; Est. 2012</span>
-      </div>
-      <div class="footer-right">
-        <span class="footer-copy">&copy; 2025 Chá House. All rights reserved.</span>
-        <span class="footer-attr">Built by <span>StudioDesk</span></span>
-      </div>
-    </div>
-  </footer>
-
-  <script>
-    const els = document.querySelectorAll('[data-reveal]');
-    const obs = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-visible'); obs.unobserve(e.target); } }); }, { threshold: 0.12 });
-    els.forEach(el => obs.observe(el));
-
-    // FLOOR PLAN — table selection
-    (function() {
-      const svg      = document.getElementById('floor-svg');
-      const tooltip  = document.getElementById('fp-tooltip');
-      const hint     = document.getElementById('fp-hint');
-      const hiddenIn = document.getElementById('selected-table');
-      const tables   = svg.querySelectorAll('.fp-table');
-      let selected   = null;
-
-      function getTableRect(el) {
-        // Use the main table rect (first rect child of the group)
-        return el.querySelector('rect');
-      }
-
-      function showTooltip(tableEl, evt) {
-        const id    = tableEl.dataset.table;
-        const seats = tableEl.dataset.seats;
-        const zone  = tableEl.dataset.zone;
-        const taken = tableEl.dataset.taken === 'true';
-        tooltip.innerHTML = taken
-          ? `<strong>${id} — ${zone}</strong>UNAVAILABLE`
-          : `<strong>${id} — ${zone}</strong>${seats}-seat table`;
-
-        // Position relative to floorplan-canvas
-        const canvas = svg.parentElement.getBoundingClientRect();
-        const tx = evt.clientX - canvas.left + 12;
-        const ty = evt.clientY - canvas.top - 32;
-        tooltip.style.left = Math.min(tx, canvas.width - 160) + 'px';
-        tooltip.style.top  = Math.max(ty, 4) + 'px';
-        tooltip.classList.add('visible');
-        tooltip.removeAttribute('aria-hidden');
-      }
-
-      function hideTooltip() {
-        tooltip.classList.remove('visible');
-        tooltip.setAttribute('aria-hidden', 'true');
-      }
-
-      tables.forEach(function(t) {
-        const taken = t.dataset.taken === 'true';
-
-        t.addEventListener('mouseenter', function(e) {
-          if (taken) return;
-          t.classList.add('fp-hover');
-          showTooltip(t, e);
-        });
-
-        t.addEventListener('mousemove', function(e) {
-          if (!taken) showTooltip(t, e);
-        });
-
-        t.addEventListener('mouseleave', function() {
-          t.classList.remove('fp-hover');
-          hideTooltip();
-        });
-
-        t.addEventListener('click', function() {
-          if (taken) return;
-          if (selected) selected.classList.remove('fp-selected');
-          if (selected === t) {
-            // deselect
-            selected = null;
-            hiddenIn.value = '';
-            hint.textContent = 'Hover a table to preview — click to select it for your visit';
-            hint.classList.remove('has-selection');
-            const field = document.getElementById('table-field');
-            if (field) field.style.display = 'none';
-          } else {
-            t.classList.add('fp-selected');
-            selected = t;
-            hiddenIn.value = t.dataset.table;
-            const seats = t.dataset.seats;
-            const zone  = t.dataset.zone;
-            hint.textContent = `✓ ${t.dataset.table} selected — ${seats}-seat · ${zone}`;
-            hint.classList.add('has-selection');
-            // surface in form
-            const field = document.getElementById('table-field');
-            const disp  = document.getElementById('table-display');
-            if (field && disp) { field.style.display = 'flex'; disp.value = `${t.dataset.table} — ${zone} (${seats} seats)`; }
-          }
-        });
-
-        // keyboard support
-        t.setAttribute('tabindex', taken ? '-1' : '0');
-        t.setAttribute('role', 'button');
-        t.setAttribute('aria-label', `Table ${t.dataset.table}, ${t.dataset.seats} seats, ${t.dataset.zone}${taken ? ', unavailable' : ''}`);
-        t.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); t.click(); }
-        });
-      });
-    })();
-
-    document.getElementById('reserve-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const btn = this.querySelector('.form-submit');
-      btn.textContent = 'Sending…';
-      btn.disabled = true;
-      setTimeout(() => { btn.textContent = '✓ Reservation Received'; btn.style.background = '#2D6A4F'; }, 1200);
-    });
-  </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="./redesign.js"></script>
 </body>
 </html>
