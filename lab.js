@@ -1,21 +1,29 @@
 /* ============================================================
    FHSN — Design Lab (A/B preference tool)
-   Loaded in <head> on every page so a saved palette is applied
-   before first paint. Re-tints the :root tokens in redesign.css
-   and fires 'fhsn:palette' for canvas/WebGL (see redesign.js).
+   Loaded in <head> on every page so saved choices apply before
+   first paint.
 
-   Colour model: the client picks ONE base red and ONE base grey.
-   Every other shade in that family (maroon, maroon-deep, char …)
-   keeps its original relationship to the base — same hue offset,
-   same saturation offset, same lightness ratio — so the site's
-   depth/contrast structure survives any choice.
+   COLOUR — re-tints the :root tokens in redesign.css and fires
+   'fhsn:palette' for canvas/WebGL (see redesign.js). The client
+   picks ONE base red and ONE base grey; every other shade in that
+   family keeps its original relationship to the base (same hue
+   offset, saturation offset and lightness ratio).
 
-   State: localStorage (per browser) + ?red=&grey= share links.
+   VARIANTS — every design feature (buttons, backgrounds,
+   animations …) has the original plus alternatives. A choice sets
+   html[data-v-<id>="<option>"] (styles in variants.css) and fires
+   'fhsn:variant' {id, value} for the JS-driven ones. The hero seal
+   is deliberately not variable.
+
+   State: localStorage (per browser) + share links
+   (?red=&grey=&v=id.option~id.option).
    ============================================================ */
 (function () {
   var ROOT = document.documentElement;
   var KEY = 'fhsn-lab-v1';
+  var PAGE = (location.pathname.split('/').pop() || 'index.html').replace('.html', '') || 'index';
 
+  /* ================= colour families ================= */
   var FAMILIES = {
     red: {
       label: 'Red', anchor: '--red', maxSat: 100,
@@ -45,7 +53,57 @@
   var ORIGINAL = { red: '#A81E22', grey: '#4E5754' };
   var PAPER = '#F2EFEA';
 
-  /* ---------- colour math ---------- */
+  /* ================= design variants =================
+     pages: where the feature exists (omitted = every page).
+     The first option is always the original design. */
+  var BD_LABEL = { aurora: 'Aurora', wave: 'Wave grid', orbs: 'Soft orbs', plain: 'Plain' };
+  var BD_DEFAULT = { services: 'aurora', news: 'wave' }[PAGE];
+  var FEATURES = [
+    /* ---- type ---- */
+    { id: 'type', tab: 'type', label: 'Heading typeface', opts: [['orig', 'Bodoni Moda'], ['playfair', 'Playfair'], ['cormorant', 'Cormorant'], ['condensed', 'Condensed caps']] },
+    { id: 'body', tab: 'type', label: 'Body typeface', opts: [['orig', 'Barlow'], ['manrope', 'Manrope'], ['serif', 'Source Serif']] },
+    { id: 'eyebrow', tab: 'type', label: 'Section labels', opts: [['orig', 'Gold rule'], ['chip', 'Boxed chip'], ['dash', 'Red dash'], ['serif', 'Italic serif']] },
+    /* ---- design: whole site ---- */
+    { id: 'header', tab: 'design', label: 'Header bar', opts: [['orig', 'Fade to blur'], ['solid', 'Solid bar'], ['float', 'Floating capsule']] },
+    { id: 'nav', tab: 'design', label: 'Menu hover', opts: [['orig', 'Gold underline'], ['pill', 'Pill'], ['dot', 'Dot'], ['bracket', 'Brackets']] },
+    { id: 'btn', tab: 'design', label: 'Buttons', opts: [['orig', 'Gold sweep + magnetic'], ['glow', 'Glow lift'], ['slide', 'Side slide'], ['pill', 'Rounded sheen']] },
+    { id: 'grain', tab: 'design', label: 'Texture overlay', opts: [['orig', 'Film grain'], ['lines', 'Fine lines'], ['vignette', 'Vignette'], ['none', 'None']] },
+    { id: 'footer', tab: 'design', label: 'Footer', opts: [['orig', 'Slim bar'], ['block', 'Big wordmark'], ['centered', 'Centred']] },
+    /* ---- design: per page ---- */
+    { id: 'pagehero', tab: 'design', pages: ['history', 'people', 'services', 'news', 'contact'], label: 'Page header background',
+      opts: [['orig', PAGE === 'services' || PAGE === 'news' ? 'See-through' : 'Maroon glow'], ['split', 'Diagonal split'], ['photo', 'Photo'], ['mesh', 'Moving mesh']] },
+    { id: 'backdrop', tab: 'design', pages: ['services', 'news'], label: 'Page backdrop',
+      opts: [['orig', BD_LABEL[BD_DEFAULT] || 'Original']].concat(['aurora', 'wave', 'orbs', 'plain'].filter(function (k) { return k !== BD_DEFAULT; }).map(function (k) { return [k, BD_LABEL[k]]; })) },
+    { id: 'cards', tab: 'design', pages: ['index'], label: 'Department cards', opts: [['orig', 'Cursor glow'], ['tilt', '3D tilt'], ['trace', 'Border trace'], ['lift', 'Lift + bar']] },
+    { id: 'offer', tab: 'design', pages: ['index', 'services'], label: 'Shelf-company offer band', opts: [['orig', 'Red + halo'], ['slate', 'Grey'], ['split', 'Split'], ['stripes', 'Moving stripes']] },
+    { id: 'posts', tab: 'design', pages: ['index', 'news'], label: 'News cards', opts: [['orig', 'Maroon fill'], ['rule', 'Gold top rule'], ['lift', 'Lift'], ['underline', 'Underline']] },
+    { id: 'timeline', tab: 'design', pages: ['history'], label: 'Timeline layout', opts: [['orig', 'Centre spine'], ['rail', 'Left rail'], ['cards', 'Cards']] },
+    { id: 'ink', tab: 'design', pages: ['history'], label: 'Timeline line', opts: [['orig', 'Glowing gradient'], ['dotted', 'Dotted gold'], ['bold', 'Bold red']] },
+    { id: 'roster', tab: 'design', pages: ['people'], label: 'People list', opts: [['orig', 'Pills'], ['columns', 'Columns'], ['avatars', 'Initial avatars']] },
+    { id: 'portrait', tab: 'design', pages: ['people'], label: 'Profile portrait', opts: [['orig', 'Gradient panel'], ['circle', 'Circle'], ['frame', 'Offset frame']] },
+    { id: 'bullets', tab: 'design', pages: ['people', 'services'], label: 'List bullets', opts: [['orig', 'Em dash'], ['check', 'Tick'], ['numbered', 'Numbered']] },
+    { id: 'jump', tab: 'design', pages: ['services'], label: 'Department shortcuts', opts: [['orig', 'Outline boxes'], ['pills', 'Numbered pills'], ['tabs', 'Tabs']] },
+    { id: 'feature', tab: 'design', pages: ['news'], label: 'Featured story', opts: [['orig', 'Side by side'], ['overlay', 'Overlay'], ['stacked', 'Stacked']] },
+    { id: 'fields', tab: 'design', pages: ['contact'], label: 'Form fields', opts: [['orig', 'Boxed'], ['underline', 'Underline'], ['soft', 'Soft rounded']] },
+    { id: 'details', tab: 'design', pages: ['contact'], label: 'Contact details', opts: [['orig', 'Stacked'], ['cards', 'Cards'], ['rule', 'Red rule']] },
+    { id: 'map', tab: 'design', pages: ['contact'], label: 'Map', opts: [['orig', 'Light'], ['dark', 'Dark'], ['mono', 'Mono + frame']] },
+    /* ---- motion ---- */
+    { id: 'reveal', tab: 'motion', label: 'Scroll reveal', replay: true, opts: [['orig', 'Fade up'], ['blur', 'Blur in'], ['slide', 'Slide in'], ['wipe', 'Wipe'], ['scale', 'Scale']] },
+    { id: 'loader', tab: 'motion', pages: ['index'], label: 'Page loader', replay: true, opts: [['orig', 'Kinetic word'], ['bar', 'Progress line'], ['mono', 'Pulsing monogram'], ['curtain', 'Curtain lift']] },
+    { id: 'heroin', tab: 'motion', pages: ['index'], label: 'Headline entrance', replay: true, opts: [['orig', 'Rise from mask'], ['letters', 'Letter cascade'], ['blur', 'Blur focus'], ['type', 'Typewriter']] },
+    { id: 'herobg', tab: 'motion', pages: ['index'], label: 'Hero background', opts: [['orig', 'Drifting motes'], ['constellation', 'Constellation'], ['rays', 'Light rays'], ['rings', 'Ripples']] },
+    { id: 'scrollhint', tab: 'motion', pages: ['index'], label: 'Scroll hint', opts: [['orig', 'Dripping line'], ['mouse', 'Mouse'], ['chevron', 'Chevron']] },
+    { id: 'ticker', tab: 'motion', pages: ['index'], label: 'Ticker', opts: [['orig', 'Marquee'], ['outline', 'Big outline'], ['double', 'Two rows'], ['static', 'Static']] },
+    { id: 'flip', tab: 'motion', pages: ['index'], label: 'Label animation', opts: [['orig', 'Letter flip'], ['shimmer', 'Gold shimmer'], ['wave', 'Wave'], ['off', 'Still']] },
+    { id: 'parallax', tab: 'motion', pages: ['index'], label: 'Photo strip', opts: [['orig', 'Parallax'], ['zoom', 'Slow zoom'], ['duotone', 'Red duotone'], ['pattern', 'Pattern, no photo']] },
+    { id: 'term', tab: 'motion', pages: ['history'], label: 'Name hover cards', opts: [['orig', 'Follows cursor'], ['tooltip', 'Tooltip'], ['dock', 'Docked corner']] }
+  ];
+  var FEAT = {}; FEATURES.forEach(function (f) { FEAT[f.id] = f; });
+  function onPage(f) { return !f.pages || f.pages.indexOf(PAGE) > -1; }
+  function validOpt(id, v) { return FEAT[id] && (v === 'orig' || FEAT[id].opts.some(function (o) { return o[0] === v; }) ||
+    /* backdrop options differ per page; accept any known backdrop */ (id === 'backdrop' && BD_LABEL[v])); }
+
+  /* ================= colour math ================= */
   function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
   function hexToRgb(h) {
     h = h.replace('#', ''); if (h.length === 3) h = h.replace(/./g, '$&$&');
@@ -95,38 +153,81 @@
     return out;
   }
 
-  /* ---------- state ---------- */
-  var state = { red: ORIGINAL.red, grey: ORIGINAL.grey, list: [], a: null, b: null, live: null, open: false };
+  /* ================= state ================= */
+  var state = { red: ORIGINAL.red, grey: ORIGINAL.grey, v: {}, list: [], a: null, b: null, live: null, open: false, tab: 'colour' };
   try { var saved = JSON.parse(localStorage.getItem(KEY)); if (saved) for (var s in saved) state[s] = saved[s]; } catch (e) {}
+  state.v = state.v || {};
   var qs = new URLSearchParams(location.search);
   if (validHex(qs.get('red'))) state.red = validHex(qs.get('red'));
   if (validHex(qs.get('grey'))) state.grey = validHex(qs.get('grey'));
+  if (qs.has('v')) {
+    state.v = {};
+    qs.get('v').split('~').forEach(function (pair) { var p = pair.split('.'); if (validOpt(p[0], p[1]) && p[1] !== 'orig') state.v[p[0]] = p[1]; });
+  }
   if (qs.get('lab') === '1') state.open = true;   /* ?lab=1 opens the panel — send this to the client */
+  if (/^(colour|type|design|motion|compare)$/.test(qs.get('tab') || '')) state.tab = qs.get('tab');
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
 
-  var pending = false;
-  function apply() {
+  var ui = null, pending = false;
+  function changed() {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(function () { pending = false; save(); if (ui) ui.refresh(); });
+  }
+
+  /* ---- colour ---- */
+  var palPending = false;
+  function applyColour() {
     var all = Object.assign(derive('red', state.red), derive('grey', state.grey));
     for (var k in all) ROOT.style.setProperty(k, all[k]);
-    if (!pending) {
-      pending = true;
+    if (!palPending) {
+      palPending = true;
       requestAnimationFrame(function () {
-        pending = false; save();
+        palPending = false;
         document.dispatchEvent(new CustomEvent('fhsn:palette', { detail: { red: state.red, grey: state.grey } }));
-        if (ui) ui.refresh();
       });
     }
-    return all;
+    changed();
   }
-  function setColour(fam, hex, keepLive) {
-    state[fam] = hex.toUpperCase();
-    if (!keepLive) state.live = null;
-    apply();
-  }
-  apply();   /* runs in <head>: no flash of the original palette */
+  function setColour(fam, hex) { state[fam] = hex.toUpperCase(); state.live = null; applyColour(); }
 
-  /* ---------- UI ---------- */
-  var ui = null;
+  /* ---- variants ---- */
+  var FONTS = {
+    playfair: 'Playfair+Display:ital,wght@0,600;1,600;1,700', cormorant: 'Cormorant+Garamond:ital,wght@0,600;1,600;1,700',
+    manrope: 'Manrope:wght@300;400;600', serif: 'Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600'
+  };
+  var fontsLoaded = {};
+  function loadFont(v) {
+    if (!FONTS[v] || fontsLoaded[v]) return; fontsLoaded[v] = true;
+    var l = document.createElement('link'); l.rel = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=' + FONTS[v] + '&display=swap';
+    document.head.appendChild(l);
+  }
+  function applyVariant(id, fire) {
+    var v = state.v[id] || 'orig';
+    if (v === 'orig') ROOT.removeAttribute('data-v-' + id); else ROOT.setAttribute('data-v-' + id, v);
+    if (id === 'type' || id === 'body') loadFont(v);
+    if (fire) document.dispatchEvent(new CustomEvent('fhsn:variant', { detail: { id: id, value: v } }));
+  }
+  function setVariant(id, v) {
+    if (v === 'orig') delete state.v[id]; else state.v[id] = v;
+    state.live = null; applyVariant(id, true); changed();
+  }
+  /* swap the whole design (colours + every variant) — used by A/B, shortlist, resets */
+  function useCombo(c, live) {
+    var before = state.v, after = c.v || {};
+    state.red = c.red; state.grey = c.grey; state.v = Object.assign({}, after); state.live = live || null;
+    applyColour();
+    FEATURES.forEach(function (f) { if ((before[f.id] || 'orig') !== (after[f.id] || 'orig')) applyVariant(f.id, true); });
+    changed();
+  }
+  function current() { return { red: state.red, grey: state.grey, v: Object.assign({}, state.v) }; }
+  function key(c) { var v = c.v || {}; return c.red + c.grey + Object.keys(v).sort().map(function (k) { return k + v[k]; }).join(); }
+
+  applyColour();
+  FEATURES.forEach(function (f) { applyVariant(f.id, false); });   /* runs in <head>: no flash of the original design */
+
+  /* ================= UI ================= */
   function el(tag, attrs, html) {
     var e = document.createElement(tag);
     for (var a in attrs || {}) e.setAttribute(a, attrs[a]);
@@ -138,6 +239,7 @@
     return '<span class="lab-mini"><i style="background:' + g['--slate'] + '"></i><i style="background:' + g['--char'] +
       '"></i><i style="background:' + r['--red'] + '"></i><i style="background:' + r['--maroon-deep'] + '"></i></span>';
   }
+  function nChanges(v) { return Object.keys(v || {}).length; }
   var toastEl, toastT;
   function toast(msg) {
     if (!toastEl) { toastEl = el('div', { class: 'lab-toast', role: 'status' }); document.body.appendChild(toastEl); }
@@ -206,7 +308,7 @@
         /* only resync HSL from hex when the change came from elsewhere (preset, A/B, reset) —
            keeps hue stable while dragging saturation down to 0 */
         if (hslToHex(hsl[0], hsl[1], hsl[2]) !== cur) hsl = hexToHsl(cur);
-        if (Math.abs(drawnL - hsl[2]) > .4 || drawnL === null) drawWheel(hsl[2]);
+        if (drawnL === null || Math.abs(drawnL - hsl[2]) > .4) drawWheel(hsl[2]);
         var ang = hsl[0] * Math.PI / 180, rr = Math.min(1, hsl[1] / F.maxSat) * 50;
         knob.style.left = (50 + Math.sin(ang) * rr) + '%'; knob.style.top = (50 - Math.cos(ang) * rr) + '%';
         knob.style.background = cur; chip.style.background = cur;
@@ -220,24 +322,54 @@
     };
   }
 
+  /* one row per feature: label + an option chip for the original and each alternative */
+  function featureRow(f) {
+    return '<div class="lab-feat" data-f="' + f.id + '"><div class="lab-feat-h"><span>' + f.label + '</span>' +
+      (f.replay ? '<button class="lab-replay" data-a="replay" data-id="' + f.id + '" title="Replay animation">↻ Replay</button>' : '') + '</div>' +
+      '<div class="lab-opts">' + f.opts.map(function (o, i) {
+        return '<button data-a="opt" data-id="' + f.id + '" data-v="' + o[0] + '"><em>' + (i ? String.fromCharCode(64 + i) : 'Orig') + '</em>' + o[1] + '</button>';
+      }).join('') + '</div></div>';
+  }
+  function featurePanel(tab) {
+    var mine = FEATURES.filter(function (f) { return f.tab === tab && f.pages && onPage(f); });
+    var site = FEATURES.filter(function (f) { return f.tab === tab && !f.pages; });
+    var others = FEATURES.filter(function (f) { return f.tab === tab && f.pages && !onPage(f); });
+    var PAGE_NAME = { index: 'Home', history: 'History', people: 'Our People', services: 'Services', news: 'News', contact: 'Contact' }[PAGE] || PAGE;
+    return (mine.length ? '<section><h3>On this page · ' + PAGE_NAME + '</h3>' + mine.map(featureRow).join('') + '</section>' : '') +
+      (site.length ? '<section><h3>Every page</h3>' + site.map(featureRow).join('') + '</section>' : '') +
+      (others.length ? '<section><p class="lab-note">' + others.length + ' more on other pages: ' +
+        others.map(function (f) { return f.label + ' (' + f.pages.join(', ').replace('index', 'home') + ')'; }).join(' · ') + '</p></section>' : '') +
+      '<section><button class="lab-btn" data-a="reset-tab" data-tab="' + tab + '">Reset this tab to original</button></section>';
+  }
+
+  var TABS = [['colour', 'Colour'], ['type', 'Type'], ['design', 'Design'], ['motion', 'Motion'], ['compare', 'Compare']];
   function build() {
     var tab = el('button', { id: 'lab-tab', 'aria-controls': 'lab', 'aria-expanded': 'false' }, 'Design Lab');
     var panel = el('aside', { id: 'lab', 'aria-label': 'Design Lab' });
     panel.innerHTML =
       '<div class="lab-head"><div><h2>Design Lab</h2><small>Pick variations · compare A/B · save favourites</small></div>' +
       '<button class="x" aria-label="Close Design Lab">×</button></div>' +
-      '<div class="lab-tabs"><button class="on">Colour</button><button disabled>Type<small>soon</small></button><button disabled>Motion<small>soon</small></button></div>' +
+      '<div class="lab-tabs" role="tablist">' + TABS.map(function (t) { return '<button role="tab" data-tab="' + t[0] + '">' + t[1] + '<small></small></button>'; }).join('') + '</div>' +
       '<div class="lab-body">' +
-        '<section><h3>Colour scale</h3><div class="lab-scale"><div class="g"><span>Grey</span><span data-o="grey"></span></div><div class="r"><span>Red</span><span data-o="red"></span></div></div></section>' +
-        '<section class="pickers"></section>' +
-        '<section><h3>All shades in use</h3><div class="lab-tokens"></div><div class="lab-contrast"></div></section>' +
-        '<section><div class="lab-btns"><button class="lab-btn primary" data-a="save">♥ Save combo</button><button class="lab-btn" data-a="share">Copy share link</button><button class="lab-btn" data-a="reset">Reset to original</button></div></section>' +
-        '<section><h3>A / B compare</h3><div class="lab-ab">' +
-          ['a', 'b'].map(function (k) { return '<div class="lab-slot" data-slot="' + k + '"><div class="lbl">' + k.toUpperCase() + '</div><div class="sw"></div><button class="lab-btn" data-a="set-' + k + '">Set current as ' + k.toUpperCase() + '</button></div>'; }).join('') +
-          '<button class="lab-btn primary lab-flip" data-a="flip">Flip A ⇄ B</button></div>' +
-          '<p class="lab-note">Tip: press <b>F</b> to flip between A and B while browsing.</p></section>' +
-        '<section><h3>Shortlist</h3><ol class="lab-list"></ol></section>' +
-      '</div>';
+        '<div data-panel="colour">' +
+          '<section><h3>Colour scale</h3><div class="lab-scale"><div class="g"><span>Grey</span><span data-o="grey"></span></div><div class="r"><span>Red</span><span data-o="red"></span></div></div></section>' +
+          '<section class="pickers"></section>' +
+          '<section><h3>All shades in use</h3><div class="lab-tokens"></div><div class="lab-contrast"></div></section>' +
+          '<section><button class="lab-btn" data-a="reset-colour">Reset colours to original</button></section>' +
+        '</div>' +
+        '<div data-panel="type">' + featurePanel('type') + '</div>' +
+        '<div data-panel="design">' + featurePanel('design') + '</div>' +
+        '<div data-panel="motion">' + featurePanel('motion') + '</div>' +
+        '<div data-panel="compare">' +
+          '<section><h3>A / B compare</h3><div class="lab-ab">' +
+            ['a', 'b'].map(function (k) { return '<div class="lab-slot" data-slot="' + k + '"><div class="lbl">' + k.toUpperCase() + '</div><div class="sw"></div><button class="lab-btn" data-a="set-' + k + '">Set current as ' + k.toUpperCase() + '</button></div>'; }).join('') +
+            '<button class="lab-btn primary lab-flip" data-a="flip">Flip A ⇄ B</button></div>' +
+            '<p class="lab-note">A and B hold the whole design — colours plus every Type, Design and Motion choice. Press <b>F</b> anywhere to flip.</p></section>' +
+          '<section><h3>Shortlist</h3><ol class="lab-list"></ol></section>' +
+          '<section><div class="lab-btns"><button class="lab-btn" data-a="reset-all">Reset everything to original</button></div></section>' +
+        '</div>' +
+      '</div>' +
+      '<div class="lab-foot"><button class="lab-btn primary" data-a="save">♥ Save design</button><button class="lab-btn" data-a="share">Copy share link</button></div>';
     document.body.appendChild(panel); document.body.appendChild(tab);
 
     var pickers = { red: makePicker('red'), grey: makePicker('grey') };
@@ -251,29 +383,38 @@
     panel.querySelector('.x').onclick = function () { setOpen(false); };
     setOpen(!!state.open);
 
-    function useCombo(c, live) { state.red = c.red; state.grey = c.grey; state.live = live || null; apply(); }
     function flip() {
       if (!state.a || !state.b) { toast('Set both A and B first'); return; }
       var next = state.live === 'a' ? 'b' : 'a';
       useCombo(state[next], next); toast('Showing ' + next.toUpperCase());
     }
+    function resetFeatures(filter) {
+      var c = current(); FEATURES.forEach(function (f) { if (filter(f)) delete c.v[f.id]; }); useCombo(c);
+    }
     panel.addEventListener('click', function (e) {
-      var b = e.target.closest('[data-a]'); if (!b) return;
-      var a = b.dataset.a, cur = { red: state.red, grey: state.grey };
-      if (a === 'save') {
-        if (state.list.some(function (c) { return c.red === cur.red && c.grey === cur.grey; })) { toast('Already in shortlist'); return; }
-        state.list.push({ id: Date.now(), name: 'Combo ' + (state.list.length + 1), red: cur.red, grey: cur.grey, fav: false });
-        save(); ui.refresh(); toast('Saved to shortlist');
+      var b = e.target.closest('[data-a],[data-tab]'); if (!b) return;
+      if (!b.dataset.a) { state.tab = b.dataset.tab; changed(); panel.querySelector('.lab-body').scrollTop = 0; return; }
+      var a = b.dataset.a, cur = current();
+      if (a === 'opt') setVariant(b.dataset.id, b.dataset.v);
+      else if (a === 'replay') document.dispatchEvent(new CustomEvent('fhsn:variant', { detail: { id: b.dataset.id, value: state.v[b.dataset.id] || 'orig' } }));
+      else if (a === 'save') {
+        if (state.list.some(function (c) { return key(c) === key(cur); })) { toast('Already in shortlist'); return; }
+        cur.id = Date.now(); cur.name = 'Design ' + (state.list.length + 1); cur.fav = false;
+        state.list.push(cur); changed(); toast('Saved to shortlist');
       } else if (a === 'share') {
-        var url = location.origin + location.pathname + '?red=' + cur.red.slice(1) + '&grey=' + cur.grey.slice(1);
+        var v = Object.keys(cur.v).map(function (k) { return k + '.' + cur.v[k]; }).join('~');
+        var url = location.origin + location.pathname + '?red=' + cur.red.slice(1) + '&grey=' + cur.grey.slice(1) + (v ? '&v=' + v : '');
         (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject())
           .then(function () { toast('Link copied'); }, function () { window.prompt('Copy this link', url); });
-      } else if (a === 'reset') { useCombo(ORIGINAL); toast('Original colours restored'); }
-      else if (a === 'set-a' || a === 'set-b') { state[a.slice(4)] = cur; state.live = a.slice(4); save(); ui.refresh(); }
+      }
+      else if (a === 'reset-colour') { cur.red = ORIGINAL.red; cur.grey = ORIGINAL.grey; useCombo(cur); toast('Original colours restored'); }
+      else if (a === 'reset-tab') { resetFeatures(function (f) { return f.tab === b.dataset.tab; }); toast('Tab reset to original'); }
+      else if (a === 'reset-all') { useCombo({ red: ORIGINAL.red, grey: ORIGINAL.grey, v: {} }); toast('Original design restored'); }
+      else if (a === 'set-a' || a === 'set-b') { state[a.slice(4)] = cur; state.live = a.slice(4); changed(); }
       else if (a === 'flip') flip();
       else if (a === 'use') useCombo(state.list[+b.dataset.i]);
-      else if (a === 'fav') { var c = state.list[+b.dataset.i]; c.fav = !c.fav; save(); ui.refresh(); }
-      else if (a === 'del') { state.list.splice(+b.dataset.i, 1); save(); ui.refresh(); }
+      else if (a === 'fav') { var c = state.list[+b.dataset.i]; c.fav = !c.fav; changed(); }
+      else if (a === 'del') { state.list.splice(+b.dataset.i, 1); changed(); }
     });
     document.addEventListener('keydown', function (e) {
       if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) flip();
@@ -281,6 +422,16 @@
 
     ui = {
       refresh: function () {
+        /* tabs + change counts */
+        var counts = { colour: (state.red !== ORIGINAL.red) + (state.grey !== ORIGINAL.grey), compare: state.list.length };
+        FEATURES.forEach(function (f) { if (state.v[f.id]) counts[f.tab] = (counts[f.tab] || 0) + 1; });
+        panel.querySelectorAll('.lab-tabs button').forEach(function (t) {
+          var k = t.dataset.tab; t.classList.toggle('on', state.tab === k); t.setAttribute('aria-selected', state.tab === k);
+          t.querySelector('small').textContent = counts[k] ? (k === 'compare' ? counts[k] + ' saved' : counts[k] + ' changed') : '';
+        });
+        panel.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.dataset.panel !== state.tab; });
+
+        /* colour */
         pickers.red.refresh(); pickers.grey.refresh();
         panel.querySelector('[data-o=red]').textContent = state.red;
         panel.querySelector('[data-o=grey]').textContent = state.grey;
@@ -292,20 +443,26 @@
         panel.querySelector('.lab-contrast').innerHTML =
           '<div style="background:' + all['--char'] + '">Text on grey <b class="' + (cg < 4.5 ? 'bad' : '') + '">' + cg.toFixed(1) + ':1</b></div>' +
           '<div style="background:' + all['--red'] + '">Text on red <b class="' + (cr < 4.5 ? 'bad' : '') + '">' + cr.toFixed(1) + ':1</b></div>';
-        ['a', 'b'].forEach(function (k) {
-          var slot = panel.querySelector('[data-slot=' + k + ']');
-          slot.classList.toggle('live', state.live === k);
-          slot.querySelector('.sw').innerHTML = state[k] ? mini(state[k].red, state[k].grey) : '<div class="empty">empty</div>';
+
+        /* variant chips */
+        panel.querySelectorAll('.lab-opts button').forEach(function (o) {
+          o.classList.toggle('on', (state.v[o.dataset.id] || 'orig') === o.dataset.v);
         });
-        var ol = panel.querySelector('.lab-list');
+
+        /* compare */
+        ['a', 'b'].forEach(function (k) {
+          var slot = panel.querySelector('[data-slot=' + k + ']'), c = state[k];
+          slot.classList.toggle('live', state.live === k);
+          slot.querySelector('.sw').innerHTML = c ? mini(c.red, c.grey) + '<small>' + nChanges(c.v) + ' design changes</small>' : '<div class="empty">empty</div>';
+        });
+        var ol = panel.querySelector('.lab-list'), curKey = key(current());
         ol.innerHTML = state.list.length ? state.list.map(function (c, i) {
-          var cur = c.red === state.red && c.grey === state.grey;
-          return '<li class="' + (cur ? 'cur' : '') + '">' + mini(c.red, c.grey) +
-            '<span class="nm">' + c.name + '<small>' + c.red + ' · ' + c.grey + '</small></span>' +
+          return '<li class="' + (key(c) === curKey ? 'cur' : '') + '">' + mini(c.red, c.grey) +
+            '<span class="nm">' + c.name + '<small>' + c.red + ' · ' + c.grey + ' · ' + nChanges(c.v) + ' design changes</small></span>' +
             '<button class="fav' + (c.fav ? ' on' : '') + '" data-a="fav" data-i="' + i + '" title="Mark as preferred" aria-label="Mark ' + c.name + ' as preferred">♥</button>' +
             '<button data-a="use" data-i="' + i + '" title="Apply" aria-label="Apply ' + c.name + '">▶</button>' +
             '<button data-a="del" data-i="' + i + '" title="Remove" aria-label="Remove ' + c.name + '">×</button></li>';
-        }).join('') : '<li class="lab-empty">No combos saved yet — pick colours and hit ♥ Save combo.</li>';
+        }).join('') : '<li class="lab-empty">Nothing saved yet — set up a design you like and hit ♥ Save design.</li>';
       }
     };
     ui.refresh();

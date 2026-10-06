@@ -337,7 +337,7 @@ h2.big{font-size:clamp(36px,5.2vw,74px);margin-bottom:20px;color:var(--paper)}
 .field textarea{resize:vertical;min-height:120px}
 .submit{justify-self:start;margin-top:6px}
 
-footer{background:#1E2321;padding:30px 0;border-top:2px solid var(--red)}
+footer{background:var(--char-ink);padding:30px 0;border-top:2px solid var(--red)}
 .frow{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;
   font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.14em;font-size:11.5px;color:rgba(242,239,234,.5)}
 .frow a:hover{color:var(--gold)}
@@ -473,7 +473,7 @@ footer{background:#1E2321;padding:30px 0;border-top:2px solid var(--red)}
   background-size:200%,100%;animation:auroraShift 60s linear infinite;mix-blend-mode:screen;opacity:.7}
 @keyframes auroraShift{from{background-position:50% 50%,50% 50%}to{background-position:350% 50%,350% 50%}}
 /* let the aurora read through the page while keeping text legible */
-body.svc-aurora-page{background:#3a0e15}
+body.svc-aurora-page{background:color-mix(in srgb,var(--maroon-dark) 78%,#000)}
 body.svc-aurora-page .page-hero{background:transparent}
 body.svc-aurora-page .svc:nth-child(even){background:color-mix(in srgb,var(--maroon-shadow) 42%,transparent);backdrop-filter:blur(2px)}
 @media(prefers-reduced-motion:reduce){.svc-aurora .aur::after{animation:none}}
@@ -495,7 +495,7 @@ body.svc-aurora-page .svc:nth-child(even){background:color-mix(in srgb,var(--mar
 #wave-grid canvas{width:100%!important;height:100%!important;display:block}
 .wave-scrim{position:fixed;inset:0;z-index:-2;pointer-events:none;
   background:linear-gradient(rgba(22,27,30,.20),rgba(14,17,19,.42))}
-body.wave-page{background:#14181b}
+body.wave-page{background:color-mix(in srgb,var(--char-ink) 70%,#000)}
 body.wave-page .page-hero{background:transparent}
 
 /* ---------- Contact map embed ---------- */

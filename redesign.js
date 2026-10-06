@@ -10,6 +10,10 @@ const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* palette tokens live in :root (redesign.css); lab.js re-tints them and fires
    'fhsn:palette' so canvas/WebGL colours can re-read them */
+/* Design Lab variants: lab.js sets data-v-<feature> on <html> and fires
+   'fhsn:variant' {id, value}; 'orig' = the original design */
+function V(id){ return document.documentElement.getAttribute('data-v-' + id) || 'orig'; }
+function onVariant(id, fn){ document.addEventListener('fhsn:variant', e => { if (e.detail.id === id) fn(e.detail.value); }); }
 function tok(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 function tokRGBA(name, a){
   const h = tok(name).replace('#', '');
@@ -56,8 +60,8 @@ function tokRGBA(name, a){
   let redStop = tokRGBA('--red', .10);
   document.addEventListener('fhsn:palette', () => { redStop = tokRGBA('--red', .10); });
   addEventListener('mousemove', e => { mx = e.clientX / innerWidth; my = e.clientY / innerHeight; });
-  function frame(){
-    t += .006; x.clearRect(0, 0, w, h);
+  let rings = [];
+  function glow(){
     const gx = w * (.34 + mx * .32 + Math.sin(t) * .04);
     const gy = h * (.24 + my * .2);
     const g = x.createRadialGradient(gx, gy, 0, gx, gy, Math.max(w, h) * .62);
@@ -65,14 +69,60 @@ function tokRGBA(name, a){
     g.addColorStop(.4, redStop);
     g.addColorStop(1, 'rgba(0,0,0,0)');
     x.fillStyle = g; x.fillRect(0, 0, w, h);
+  }
+  function drawMotes(speed){
     for (const m of motes){
-      m.x += m.vx + Math.sin(t * 1.6 + m.ph) * .12; m.y += m.vy;
+      m.x += (m.vx + Math.sin(t * 1.6 + m.ph) * .12) * speed; m.y += m.vy * speed;
       if (m.y < -8){ m.y = h + 8; m.x = Math.random() * w; }
       if (m.x < -8) m.x = w + 8; if (m.x > w + 8) m.x = -8;
       const tw = m.a * (.6 + Math.sin(t * 3 + m.ph) * .4);
       x.beginPath(); x.arc(m.x, m.y, m.r, 0, 6.284);
       x.fillStyle = `rgba(242,239,234,${tw})`; x.fill();
     }
+  }
+  /* alt A: motes joined into a slow constellation */
+  function constellation(){
+    drawMotes(.5);
+    const pts = motes.slice(0, 90), max = 120;
+    x.lineWidth = 1;
+    for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++){
+      const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y, d = Math.sqrt(dx * dx + dy * dy);
+      if (d < max){ x.strokeStyle = `rgba(201,162,39,${(1 - d / max) * .22})`; x.beginPath(); x.moveTo(pts[i].x, pts[i].y); x.lineTo(pts[j].x, pts[j].y); x.stroke(); }
+    }
+  }
+  /* alt B: slow swaying light rays from above */
+  function rays(){
+    const ox = w * (.3 + mx * .4), oy = -h * .15, n = 9;
+    for (let i = 0; i < n; i++){
+      const a = Math.PI / 2 + Math.sin(t * .6 + i * 1.7) * .55 + (i - n / 2) * .09;
+      const len = h * 1.6, spread = .035 + (i % 3) * .012;
+      const g = x.createLinearGradient(ox, oy, ox + Math.cos(a) * len, oy + Math.sin(a) * len);
+      g.addColorStop(0, 'rgba(242,224,170,0.16)'); g.addColorStop(1, 'rgba(242,224,170,0)');
+      x.fillStyle = g; x.beginPath(); x.moveTo(ox, oy);
+      x.lineTo(ox + Math.cos(a - spread) * len, oy + Math.sin(a - spread) * len);
+      x.lineTo(ox + Math.cos(a + spread) * len, oy + Math.sin(a + spread) * len); x.fill();
+    }
+    drawMotes(.35);
+  }
+  /* alt C: concentric ripples spreading from the cursor */
+  function ripples(){
+    const far = Math.max(w, h) * .8;
+    if (!rings.length || rings[rings.length - 1].r > 70) rings.push({ x: w * mx, y: h * my, r: 0 });
+    rings = rings.filter(r => r.r < far);
+    for (const r of rings){
+      r.r += 1.3;
+      x.strokeStyle = `rgba(201,162,39,${.32 * (1 - r.r / far)})`;
+      x.lineWidth = 1; x.beginPath(); x.arc(r.x, r.y, r.r, 0, 6.284); x.stroke();
+    }
+  }
+  function frame(){
+    t += .006; x.clearRect(0, 0, w, h);
+    glow();
+    const mode = V('herobg');
+    if (mode === 'constellation') constellation();
+    else if (mode === 'rays') rays();
+    else if (mode === 'rings') ripples();
+    else drawMotes(1);
     requestAnimationFrame(frame);
   }
   if (!RM) frame();
@@ -111,6 +161,7 @@ document.querySelectorAll('.card').forEach(card => {
 /* ---------- magnetic buttons ---------- */
 if (!RM && window.gsap) document.querySelectorAll('.btn').forEach(btn => {
   btn.addEventListener('mousemove', e => {
+    if (V('btn') !== 'orig') return;
     const r = btn.getBoundingClientRect();
     gsap.to(btn, { x: (e.clientX - r.left - r.width / 2) * .22, y: (e.clientY - r.top - r.height / 2) * .3, duration: .5, ease: 'power3.out' });
   });
@@ -121,23 +172,70 @@ if (!RM && window.gsap) document.querySelectorAll('.btn').forEach(btn => {
 if (window.gsap){
   gsap.registerPlugin(ScrollTrigger);
   if (!RM){
-    // hero load sequence (home only)
+    // hero load sequence (home only) — variant 'heroin', replays when it changes
     if (document.querySelector('.hero .ln i')){
-      gsap.set('.hero .ln i', { yPercent: 115 });
-      gsap.timeline({ delay: .25 })
-        .to('.hero .eyebrow', { opacity: 1, duration: .6, from: { opacity: 0 } })
-        .to('.hero .ln i', { yPercent: 0, duration: 1.15, stagger: .11, ease: 'power4.out' }, 0)
-        .from('.hero .lede', { y: 22, opacity: 0, duration: .9, ease: 'power3.out' }, .55)
-        .from('.hero .cta .btn', { y: 22, opacity: 0, duration: .8, stagger: .1, ease: 'power3.out' }, .7)
-        .from('.hero .scroll-hint', { opacity: 0, duration: .8 }, 1);
+      let heroTl = null, split = false;
+      const splitChars = () => {
+        if (split) return; split = true;
+        document.querySelectorAll('.hero .ln i').forEach(function walk(node){
+          [...node.childNodes].forEach(n => {
+            if (n.nodeType === 3){
+              const frag = document.createDocumentFragment();
+              [...n.textContent].forEach(ch => {
+                if (ch === ' '){ frag.appendChild(document.createTextNode(' ')); return; }
+                const sp = document.createElement('span'); sp.className = 'ch'; sp.textContent = ch; frag.appendChild(sp);
+              });
+              n.replaceWith(frag);
+            } else if (n.nodeType === 1) walk(n);
+          });
+        });
+      };
+      const playHero = () => {
+        if (heroTl) heroTl.kill();
+        const mode = V('heroin');
+        gsap.set(['.hero .ln i', '.hero .ch', '.hero .lede', '.hero .cta .btn', '.hero .scroll-hint', '.hero .eyebrow'], { clearProps: 'opacity,transform,filter' });
+        document.querySelector('.hero h1').classList.toggle('typing', mode === 'type');
+        heroTl = gsap.timeline({ delay: .25 }).from('.hero .eyebrow', { opacity: 0, duration: .6 }, 0);
+        if (mode === 'letters'){
+          splitChars();
+          heroTl.from('.hero .ch', { opacity: 0, y: 34, rotate: 10, duration: .8, stagger: .022, ease: 'power3.out' }, 0);
+        } else if (mode === 'blur'){
+          heroTl.from('.hero .ln i', { opacity: 0, filter: 'blur(18px)', scale: 1.06, duration: 1.4, stagger: .2, ease: 'power2.out' }, 0);
+        } else if (mode === 'type'){
+          splitChars();
+          heroTl.from('.hero .ch', { opacity: 0, duration: .01, stagger: .045, ease: 'none' }, 0);
+        } else {
+          heroTl.fromTo('.hero .ln i', { yPercent: 115 }, { yPercent: 0, duration: 1.15, stagger: .11, ease: 'power4.out' }, 0);
+        }
+        const late = mode === 'type' ? 1.7 : 0;
+        heroTl.from('.hero .lede', { y: 22, opacity: 0, duration: .9, ease: 'power3.out' }, .55 + late)
+          .from('.hero .cta .btn', { y: 22, opacity: 0, duration: .8, stagger: .1, ease: 'power3.out' }, .7 + late)
+          .from('.hero .scroll-hint', { opacity: 0, duration: .8 }, 1 + late);
+      };
+      playHero(); onVariant('heroin', playHero);
       gsap.to('.hero .wrap', { y: 90, opacity: .25, ease: 'none',
         scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
     }
-    // section reveals (all pages)
-    gsap.utils.toArray('.reveal').forEach(el => {
-      gsap.to(el, { opacity: 1, y: 0, duration: .95, ease: 'power3.out',
-        scrollTrigger: { trigger: el, start: 'top 86%' } });
-    });
+    // section reveals (all pages) — variant 'reveal', rebuilt live when it changes
+    const REVEAL_FROM = {
+      orig: { opacity: 0, y: 28 },
+      blur: { opacity: 0, filter: 'blur(14px)' },
+      slide: { opacity: 0, x: -60 },
+      wipe: { clipPath: 'inset(0 0 100% 0)', y: 18 },
+      scale: { opacity: 0, scale: .9 }
+    };
+    let revealTweens = [];
+    const setupReveals = () => {
+      revealTweens.forEach(tw => { if (tw.scrollTrigger) tw.scrollTrigger.kill(); tw.kill(); });
+      const from = REVEAL_FROM[V('reveal')] || REVEAL_FROM.orig;
+      revealTweens = gsap.utils.toArray('.reveal').map(el => {
+        gsap.set(el, { clearProps: 'opacity,transform,filter,clipPath' });
+        return gsap.fromTo(el, Object.assign({ opacity: 1, x: 0, y: 0, scale: 1 }, from),
+          { opacity: 1, x: 0, y: 0, scale: 1, filter: 'blur(0px)', clipPath: 'inset(0 0 0% 0)',
+            duration: .95, ease: 'power3.out', clearProps: 'filter,clipPath', scrollTrigger: { trigger: el, start: 'top 86%' } });
+      });
+    };
+    setupReveals(); onVariant('reveal', setupReveals);
     // timeline ink draw + node activation (history page)
     const tlEl = document.getElementById('tl');
     if (tlEl){
@@ -349,6 +447,14 @@ if (window.gsap){
   var tx = 0, ty = 0, cx = 0, cy = 0, active = false, primed = false, raf = null;
   function loop(){ cx += (tx - cx) * 0.18; cy += (ty - cy) * 0.18; card.style.transform = 'translate3d(' + cx + 'px,' + cy + 'px,0)'; if (active) raf = requestAnimationFrame(loop); else raf = null; }
   function place(x, y){ var w = card.offsetWidth || 300; tx = Math.max(8, Math.min(x + 18, innerWidth - w - 8)); ty = Math.min(y + 18, innerHeight - (card.offsetHeight || 200) - 10); if (!primed){ cx = tx; cy = ty; primed = true; } }
+  /* 'tooltip' pins above the term, 'dock' pins bottom-left; 'orig' follows the cursor */
+  function anchor(el){
+    var mode = V('term'), w = card.offsetWidth || 262, h = card.offsetHeight || 120;
+    if (mode === 'tooltip'){ var r = el.getBoundingClientRect(); tx = Math.max(8, Math.min(r.left + r.width / 2 - w / 2, innerWidth - w - 8)); ty = r.top - h - 12; if (ty < 70) ty = r.bottom + 12; }
+    else if (mode === 'dock'){ tx = 24; ty = innerHeight - h - 24; }
+    else return;
+    cx = tx; cy = ty; primed = true;
+  }
   function show(el){ titleEl.textContent = el.dataset.title || el.textContent.trim(); descEl.textContent = el.dataset.desc || ''; card.classList.add('show'); active = true; if (!raf) loop(); }
   function hide(){ card.classList.remove('show'); active = false; }
   var touch = window.matchMedia('(hover: none)').matches;
@@ -366,8 +472,8 @@ if (window.gsap){
         cx = tx; cy = ty; primed = true;
       });
     } else {
-      t.addEventListener('mouseenter', function(e){ place(e.clientX, e.clientY); show(t); });
-      t.addEventListener('mousemove', function(e){ place(e.clientX, e.clientY); });
+      t.addEventListener('mouseenter', function(e){ place(e.clientX, e.clientY); show(t); anchor(t); });
+      t.addEventListener('mousemove', function(e){ if (V('term') === 'orig') place(e.clientX, e.clientY); });
       t.addEventListener('mouseleave', hide);
     }
   });
@@ -379,9 +485,10 @@ if (window.gsap){
    Ported from StudioDesk WaveGridBackground (React); post-processing and
    shadows dropped so it runs on three-core UMD (no ES-module addons).
    Guards on #wave-grid + THREE; disabled on mobile / reduced-motion. */
-(function () {
+window.fhsnWaveGrid = function () {
   var mount = document.getElementById('wave-grid');
-  if (!mount || typeof THREE === 'undefined') return;
+  if (!mount || mount.dataset.ready || typeof THREE === 'undefined') return;
+  mount.dataset.ready = '1';
   var isMobile = innerWidth < 768;
   var MAX_TRAIL = 128, GRID = isMobile ? 24 : 36, colorBase = tok('--wave-base'), colorHigh = tok('--red');
 
@@ -497,8 +604,10 @@ if (window.gsap){
   var clock = new THREE.Clock();
   renderer.setAnimationLoop(function () {
     var dt = clock.getDelta();
+    if (mount.style.display === 'none') return;
     updateTrail(dt);
     lm.x += (mouse.x - lm.x) * 0.04; lm.y += (mouse.y - lm.y) * 0.04; posCam(lm.x, lm.y);
     renderer.render(scene, camera);
   });
-})();
+};
+window.fhsnWaveGrid();
