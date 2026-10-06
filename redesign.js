@@ -8,6 +8,15 @@
    ============================================================ */
 const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/* palette tokens live in :root (redesign.css); lab.js re-tints them and fires
+   'fhsn:palette' so canvas/WebGL colours can re-read them */
+function tok(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function tokRGBA(name, a){
+  const h = tok(name).replace('#', '');
+  const n = parseInt(h.length === 3 ? h.replace(/./g, '$&$&') : h, 16);
+  return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
+}
+
 /* ---------- film grain (all pages) ---------- */
 (function(){
   const c = document.getElementById('grain'); if(!c) return;
@@ -44,6 +53,8 @@ const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }));
   }
   size(); addEventListener('resize', size);
+  let redStop = tokRGBA('--red', .10);
+  document.addEventListener('fhsn:palette', () => { redStop = tokRGBA('--red', .10); });
   addEventListener('mousemove', e => { mx = e.clientX / innerWidth; my = e.clientY / innerHeight; });
   function frame(){
     t += .006; x.clearRect(0, 0, w, h);
@@ -51,7 +62,7 @@ const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const gy = h * (.24 + my * .2);
     const g = x.createRadialGradient(gx, gy, 0, gx, gy, Math.max(w, h) * .62);
     g.addColorStop(0, 'rgba(201,162,39,0.15)');
-    g.addColorStop(.4, 'rgba(168,30,34,0.10)');
+    g.addColorStop(.4, redStop);
     g.addColorStop(1, 'rgba(0,0,0,0)');
     x.fillStyle = g; x.fillRect(0, 0, w, h);
     for (const m of motes){
@@ -235,7 +246,8 @@ if (window.gsap){
   scene.add(new THREE.AmbientLight(0x2a2320, 0.7));
   var key = new THREE.SpotLight(0xffe6b0, 2.4, 40, 0.6, 0.5, 1);
   key.position.set(-6, 8, 10); scene.add(key);
-  var rim = new THREE.PointLight(0x8a1417, 3.0, 30);
+  var rim = new THREE.PointLight(tok('--maroon-mid'), 3.0, 30);
+  document.addEventListener('fhsn:palette', function () { rim.color.set(tok('--maroon-mid')); });
   rim.position.set(7, -4, 4); scene.add(rim);
   var fill = new THREE.PointLight(0xb5924c, 1.2, 30);
   fill.position.set(0, 2, 8); scene.add(fill);
@@ -371,7 +383,7 @@ if (window.gsap){
   var mount = document.getElementById('wave-grid');
   if (!mount || typeof THREE === 'undefined') return;
   var isMobile = innerWidth < 768;
-  var MAX_TRAIL = 128, GRID = isMobile ? 24 : 36, colorBase = '#36454F', colorHigh = '#A81E22';
+  var MAX_TRAIL = 128, GRID = isMobile ? 24 : 36, colorBase = tok('--wave-base'), colorHigh = tok('--red');
 
   function overrideVertex(vs) {
     return vs.replace('#include <common>', '#include <common>\n' +
@@ -467,6 +479,11 @@ if (window.gsap){
     dummy.position.set(x, 0, z); dummy.updateMatrix(); inst.setMatrixAt(idx, dummy.matrix); offAttr.setXY(idx, x, z);
   }
   inst.instanceMatrix.needsUpdate = true; offAttr.needsUpdate = true;
+  document.addEventListener('fhsn:palette', function () {
+    cU.uColorBase.value.set(tok('--wave-base')); cU.uColorHigh.value.set(tok('--red'));
+    scene.background.set(tok('--wave-base')).multiplyScalar(0.72);
+    if (RM) renderer.render(scene, camera);
+  });
 
   var canvas = document.createElement('canvas'); mount.appendChild(canvas);
   var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });

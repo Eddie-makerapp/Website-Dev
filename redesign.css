@@ -15,6 +15,15 @@
   --slate:#4E5754;
   --slate-deep:#3B443F;
   --char:#2E3532;
+  /* extra red/grey shades, tokenised so the Design Lab (lab.js) can re-tint them */
+  --maroon-mid:#8E1B26;
+  --maroon-dark:#4A121B;
+  --maroon-ink:#2E0A0E;
+  --maroon-night:#1E060A;
+  --maroon-shadow:#280A10;
+  --char-deep:#242927;
+  --char-ink:#1E2321;
+  --wave-base:#36454F;
   --paper:#F2EFEA;
   --paper-dim:#D9D4CC;
   --gold:#C9A227;
@@ -48,13 +57,13 @@ a{color:inherit;text-decoration:none}
 header{
   position:fixed;top:0;left:0;right:0;z-index:50;
   padding:18px 0;
-  background:rgba(46,53,50,0);
+  background:color-mix(in srgb,var(--char) 0%,transparent);
   backdrop-filter:blur(0px);
   transition:background .5s var(--ease),backdrop-filter .5s var(--ease),padding .5s var(--ease),border-color .5s;
   border-bottom:1px solid transparent;
 }
 header.stuck{
-  background:rgba(30,35,33,.86);backdrop-filter:blur(14px);padding:11px 0;
+  background:color-mix(in srgb,var(--char-ink) 86%,transparent);backdrop-filter:blur(14px);padding:11px 0;
   border-bottom:1px solid rgba(201,162,39,.22);
 }
 .navrow{display:flex;align-items:center;justify-content:space-between;gap:30px}
@@ -113,11 +122,11 @@ nav a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
 /* ---------- hero (home) ---------- */
 .hero{position:relative;min-height:100svh;display:flex;align-items:center;overflow:hidden;
-  background:radial-gradient(120% 100% at 50% 0%,#8E1B26 0%,var(--maroon) 40%,var(--maroon-deep) 100%);}
+  background:radial-gradient(120% 100% at 50% 0%,var(--maroon-mid) 0%,var(--maroon) 40%,var(--maroon-deep) 100%);}
 #chamber{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hero::after{
   content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(70% 60% at 50% 45%,transparent 20%,rgba(30,6,10,.72) 100%);
+  background:radial-gradient(70% 60% at 50% 45%,transparent 20%,color-mix(in srgb,var(--maroon-night) 72%,transparent) 100%);
 }
 .hero .wrap{position:relative;z-index:3;padding-top:110px}
 .hero h1{
@@ -142,9 +151,9 @@ nav a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 /* ---------- page-hero (interior pages) ---------- */
 .page-hero{position:relative;min-height:56vh;display:flex;align-items:flex-end;overflow:hidden;
   padding:150px 0 70px;
-  background:radial-gradient(120% 110% at 50% 0%,#8E1B26 0%,var(--maroon) 46%,var(--maroon-deep) 100%);}
+  background:radial-gradient(120% 110% at 50% 0%,var(--maroon-mid) 0%,var(--maroon) 46%,var(--maroon-deep) 100%);}
 .page-hero::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(70% 90% at 50% 25%,transparent 25%,rgba(30,6,10,.7) 100%)}
+  background:radial-gradient(70% 90% at 50% 25%,transparent 25%,color-mix(in srgb,var(--maroon-night) 70%,transparent) 100%)}
 .page-hero .wrap{position:relative;z-index:3}
 .page-hero h1{font-size:clamp(42px,6.6vw,96px);color:var(--paper);margin-bottom:14px;max-width:16ch}
 .page-hero h1 em{color:var(--gold);font-style:italic}
@@ -264,7 +273,7 @@ h2.big{font-size:clamp(36px,5.2vw,74px);margin-bottom:20px;color:var(--paper)}
 /* profiles (people page) */
 .profile{display:grid;grid-template-columns:300px 1fr;gap:56px;align-items:start;margin-top:0}
 .profile+.profile{margin-top:90px}
-.pfphoto{aspect-ratio:3/4;background:linear-gradient(160deg,var(--slate),#242927);
+.pfphoto{aspect-ratio:3/4;background:linear-gradient(160deg,var(--slate),var(--char-deep));
   border:1px solid rgba(201,162,39,.3);display:grid;place-items:center;
   font-family:"Bodoni Moda",serif;font-style:italic;font-weight:700;font-size:4rem;color:rgba(201,162,39,.6)}
 .profile h3{font-size:clamp(28px,3.6vw,44px);color:var(--paper);font-style:italic;margin-bottom:6px}
@@ -303,7 +312,7 @@ h2.big{font-size:clamp(36px,5.2vw,74px);margin-bottom:20px;color:var(--paper)}
 /* featured post (news page) */
 .feature{display:grid;grid-template-columns:1.05fr .95fr;gap:0;margin-top:10px;
   border:1px solid rgba(201,162,39,.24);overflow:hidden;cursor:pointer}
-.feature .media{background:linear-gradient(150deg,var(--maroon),#242927);min-height:320px;display:grid;place-items:center;
+.feature .media{background:linear-gradient(150deg,var(--maroon),var(--char-deep));min-height:320px;display:grid;place-items:center;
   font-family:"Bodoni Moda",serif;font-style:italic;font-weight:700;font-size:3rem;color:rgba(242,239,234,.4)}
 .feature .body{padding:52px 46px;align-self:center;background:var(--slate)}
 .feature time{font-family:"Barlow Condensed",sans-serif;letter-spacing:.2em;text-transform:uppercase;font-size:11px;color:var(--gold)}
@@ -411,7 +420,7 @@ footer{background:#1E2321;padding:30px 0;border-top:2px solid var(--red)}
 
 /* ---------- Kinetic site loader ---------- */
 #site-loader{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;
-  background:radial-gradient(120% 100% at 50% 0%,#8E1B26,#5B0F17 70%);
+  background:radial-gradient(120% 100% at 50% 0%,var(--maroon-mid),var(--maroon-deep) 70%);
   transition:opacity .6s var(--ease,ease),visibility .6s}
 #site-loader.hide{opacity:0;visibility:hidden;pointer-events:none}
 #site-loader .kt{position:relative;transform:scale(.9)}
@@ -430,7 +439,7 @@ footer{background:#1E2321;padding:30px 0;border-top:2px solid var(--red)}
 .parallax-strip{position:relative;min-height:min(66vh,540px);display:grid;place-items:center;overflow:hidden;isolation:isolate}
 .parallax-strip .px-bg{position:absolute;inset:-18% 0;z-index:-2;background:url('./assets/parallax.avif') center/cover no-repeat;will-change:transform}
 .parallax-strip .px-scrim{position:absolute;inset:0;z-index:-1;pointer-events:none;
-  background:linear-gradient(rgba(46,10,14,.66),rgba(46,10,14,.86))}
+  background:linear-gradient(color-mix(in srgb,var(--maroon-ink) 66%,transparent),color-mix(in srgb,var(--maroon-ink) 86%,transparent))}
 .parallax-strip .px-inner{position:relative;text-align:center;max-width:24ch;padding:0 var(--space-md,1.5rem)}
 .parallax-strip .eyebrow{justify-content:center}
 .parallax-strip h2{font-family:"Bodoni Moda",serif;font-style:italic;font-weight:600;color:var(--paper,#F2EFEA);
@@ -452,10 +461,10 @@ footer{background:#1E2321;padding:30px 0;border-top:2px solid var(--red)}
 @media(max-width:768px){.cursor-term{border-bottom-style:solid}#cursor-card{width:min(300px,88vw)}}
 
 /* ---------- Aurora background — Professional Services page (brand-recoloured) ---------- */
-.svc-aurora{position:fixed;inset:0;z-index:-3;overflow:hidden;background:#4a121b;pointer-events:none}
+.svc-aurora{position:fixed;inset:0;z-index:-3;overflow:hidden;background:var(--maroon-dark);pointer-events:none}
 .svc-aurora .aur{position:absolute;inset:0;
-  --a-stripes:repeating-linear-gradient(100deg,#4a121b 0%,#4a121b 7%,transparent 10%,transparent 12%,#4a121b 16%);
-  --a-brand:repeating-linear-gradient(100deg,#A81E22 10%,#E6B94A 15%,#C9A227 20%,#8E1B26 25%,#7A1620 30%);
+  --a-stripes:repeating-linear-gradient(100deg,var(--maroon-dark) 0%,var(--maroon-dark) 7%,transparent 10%,transparent 12%,var(--maroon-dark) 16%);
+  --a-brand:repeating-linear-gradient(100deg,var(--red) 10%,#E6B94A 15%,#C9A227 20%,var(--maroon-mid) 25%,var(--maroon) 30%);
   background-image:var(--a-stripes),var(--a-brand);background-size:300%,200%;background-position:50% 50%,50% 50%;
   filter:blur(10px) opacity(78%) saturate(150%) brightness(1.25);
   -webkit-mask-image:radial-gradient(ellipse at 100% 0%,#000 55%,transparent 85%);
@@ -466,7 +475,7 @@ footer{background:#1E2321;padding:30px 0;border-top:2px solid var(--red)}
 /* let the aurora read through the page while keeping text legible */
 body.svc-aurora-page{background:#3a0e15}
 body.svc-aurora-page .page-hero{background:transparent}
-body.svc-aurora-page .svc:nth-child(even){background:rgba(40,10,16,.42);backdrop-filter:blur(2px)}
+body.svc-aurora-page .svc:nth-child(even){background:color-mix(in srgb,var(--maroon-shadow) 42%,transparent);backdrop-filter:blur(2px)}
 @media(prefers-reduced-motion:reduce){.svc-aurora .aur::after{animation:none}}
 
 /* ---------- People pills (Our People page) ---------- */
