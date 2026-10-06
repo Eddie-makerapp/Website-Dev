@@ -14,6 +14,12 @@ const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
    'fhsn:variant' {id, value}; 'orig' = the original design */
 function V(id){ return document.documentElement.getAttribute('data-v-' + id) || 'orig'; }
 function onVariant(id, fn){ document.addEventListener('fhsn:variant', e => { if (e.detail.id === id) fn(e.detail.value); }); }
+/* timeline nodes: one place toggles 'on' and tells listeners (pages.js) */
+function setNode(n, on){
+  if (n.classList.contains('on') === on) return;
+  n.classList.toggle('on', on);
+  document.dispatchEvent(new CustomEvent('fhsn:node', { detail: { node: n, on: on } }));
+}
 function tok(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 function tokRGBA(name, a){
   const h = tok(name).replace('#', '');
@@ -228,7 +234,7 @@ if (window.gsap){
     const setupReveals = () => {
       revealTweens.forEach(tw => { if (tw.scrollTrigger) tw.scrollTrigger.kill(); tw.kill(); });
       const from = REVEAL_FROM[V('reveal')] || REVEAL_FROM.orig;
-      revealTweens = gsap.utils.toArray('.reveal').map(el => {
+      revealTweens = gsap.utils.toArray('.reveal:not([data-own-motion])').map(el => {
         gsap.set(el, { clearProps: 'opacity,transform,filter,clipPath' });
         return gsap.fromTo(el, Object.assign({ opacity: 1, x: 0, y: 0, scale: 1 }, from),
           { opacity: 1, x: 0, y: 0, scale: 1, filter: 'blur(0px)', clipPath: 'inset(0 0 0% 0)',
@@ -236,17 +242,20 @@ if (window.gsap){
       });
     };
     setupReveals(); onVariant('reveal', setupReveals);
+    window.fhsnReveals = setupReveals;
     // timeline ink draw + node activation (history page)
     const tlEl = document.getElementById('tl');
     if (tlEl){
-      gsap.to('#ink', { height: '100%', ease: 'none',
+      const inkTw = gsap.to('#ink', { height: '100%', ease: 'none',
         scrollTrigger: { trigger: tlEl, start: 'top 62%', end: 'bottom 78%', scrub: .5 } });
+      const triggers = [inkTw.scrollTrigger];
       gsap.utils.toArray('.node').forEach(n => {
         gsap.from(n, { opacity: 0, y: 40, duration: .9, ease: 'power3.out',
           scrollTrigger: { trigger: n, start: 'top 84%' } });
-        ScrollTrigger.create({ trigger: n, start: 'top 68%', end: 'bottom 40%',
-          onToggle: s => n.classList.toggle('on', s.isActive) });
+        triggers.push(ScrollTrigger.create({ trigger: n, start: 'top 68%', end: 'bottom 40%',
+          onToggle: s => setNode(n, s.isActive) }));
       });
+      window.fhsnTL = { triggers: triggers };
     }
   } else {
     document.querySelectorAll('.reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });

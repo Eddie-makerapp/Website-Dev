@@ -9,10 +9,11 @@
    family keeps its original relationship to the base (same hue
    offset, saturation offset and lightness ratio).
 
-   VARIANTS — every design feature (buttons, backgrounds,
-   animations …) has the original plus alternatives. A choice sets
-   html[data-v-<id>="<option>"] (styles in variants.css) and fires
-   'fhsn:variant' {id, value} for the JS-driven ones. The hero seal
+   VARIANTS — each page has its own layouts, backgrounds, motion,
+   buttons and extra features (pages.css / pages.js), plus a set of
+   whole-site options (variants.css / variants.js). A choice sets
+   html[data-v-<id>="<option>"] — only on the page the feature
+   belongs to — and fires 'fhsn:variant' {id, value}. The hero seal
    is deliberately not variable.
 
    State: localStorage (per browser) + share links
@@ -22,6 +23,10 @@
   var ROOT = document.documentElement;
   var KEY = 'fhsn-lab-v1';
   var PAGE = (location.pathname.split('/').pop() || 'index.html').replace('.html', '') || 'index';
+  var PAGES = [['index', 'Home'], ['history', 'History'], ['people', 'Our People'], ['services', 'Services'], ['news', 'News'], ['contact', 'Contact']];
+  if (!PAGES.some(function (p) { return p[0] === PAGE; })) PAGE = 'index';
+  var PAGE_NAME = PAGES.filter(function (p) { return p[0] === PAGE; })[0][1];
+  ROOT.dataset.page = PAGE;
 
   /* ================= colour families ================= */
   var FAMILIES = {
@@ -54,54 +59,104 @@
   var PAPER = '#F2EFEA';
 
   /* ================= design variants =================
-     pages: where the feature exists (omitted = every page).
+     pages: the page(s) the feature lives on (none = whole site).
+     group: section it sits in. el: what to scroll to when changed.
      The first option is always the original design. */
-  var BD_LABEL = { aurora: 'Aurora', wave: 'Wave grid', orbs: 'Soft orbs', plain: 'Plain' };
-  var BD_DEFAULT = { services: 'aurora', news: 'wave' }[PAGE];
+  var GROUPS = { layout: 'Layout', background: 'Background', motion: 'Motion & animation', buttons: 'Buttons', features: 'Extra features',
+    type: 'Typography', chrome: 'Header & footer' };
+  var PAGE_GROUPS = ['background', 'layout', 'motion', 'buttons', 'features'];
+  var SITE_GROUPS = ['type', 'chrome', 'buttons', 'motion', 'features'];
   var FEATURES = [
-    /* ---- type ---- */
-    { id: 'type', tab: 'type', label: 'Heading typeface', opts: [['orig', 'Bodoni Moda'], ['playfair', 'Playfair'], ['cormorant', 'Cormorant'], ['condensed', 'Condensed caps']] },
-    { id: 'body', tab: 'type', label: 'Body typeface', opts: [['orig', 'Barlow'], ['manrope', 'Manrope'], ['serif', 'Source Serif']] },
-    { id: 'eyebrow', tab: 'type', label: 'Section labels', opts: [['orig', 'Gold rule'], ['chip', 'Boxed chip'], ['dash', 'Red dash'], ['serif', 'Italic serif']] },
-    /* ---- design: whole site ---- */
-    { id: 'header', tab: 'design', label: 'Header bar', opts: [['orig', 'Fade to blur'], ['solid', 'Solid bar'], ['float', 'Floating capsule']] },
-    { id: 'nav', tab: 'design', label: 'Menu hover', opts: [['orig', 'Gold underline'], ['pill', 'Pill'], ['dot', 'Dot'], ['bracket', 'Brackets']] },
-    { id: 'btn', tab: 'design', label: 'Buttons', opts: [['orig', 'Gold sweep + magnetic'], ['glow', 'Glow lift'], ['slide', 'Side slide'], ['pill', 'Rounded sheen']] },
-    { id: 'grain', tab: 'design', label: 'Texture overlay', opts: [['orig', 'Film grain'], ['lines', 'Fine lines'], ['vignette', 'Vignette'], ['none', 'None']] },
-    { id: 'footer', tab: 'design', label: 'Footer', opts: [['orig', 'Slim bar'], ['block', 'Big wordmark'], ['centered', 'Centred']] },
-    /* ---- design: per page ---- */
-    { id: 'pagehero', tab: 'design', pages: ['history', 'people', 'services', 'news', 'contact'], label: 'Page header background',
-      opts: [['orig', PAGE === 'services' || PAGE === 'news' ? 'See-through' : 'Maroon glow'], ['split', 'Diagonal split'], ['photo', 'Photo'], ['mesh', 'Moving mesh']] },
-    { id: 'backdrop', tab: 'design', pages: ['services', 'news'], label: 'Page backdrop',
-      opts: [['orig', BD_LABEL[BD_DEFAULT] || 'Original']].concat(['aurora', 'wave', 'orbs', 'plain'].filter(function (k) { return k !== BD_DEFAULT; }).map(function (k) { return [k, BD_LABEL[k]]; })) },
-    { id: 'cards', tab: 'design', pages: ['index'], label: 'Department cards', opts: [['orig', 'Cursor glow'], ['tilt', '3D tilt'], ['trace', 'Border trace'], ['lift', 'Lift + bar']] },
-    { id: 'offer', tab: 'design', pages: ['index', 'services'], label: 'Shelf-company offer band', opts: [['orig', 'Red + halo'], ['slate', 'Grey'], ['split', 'Split'], ['stripes', 'Moving stripes']] },
-    { id: 'posts', tab: 'design', pages: ['index', 'news'], label: 'News cards', opts: [['orig', 'Maroon fill'], ['rule', 'Gold top rule'], ['lift', 'Lift'], ['underline', 'Underline']] },
-    { id: 'timeline', tab: 'design', pages: ['history'], label: 'Timeline layout', opts: [['orig', 'Centre spine'], ['rail', 'Left rail'], ['cards', 'Cards']] },
-    { id: 'ink', tab: 'design', pages: ['history'], label: 'Timeline line', opts: [['orig', 'Glowing gradient'], ['dotted', 'Dotted gold'], ['bold', 'Bold red']] },
-    { id: 'roster', tab: 'design', pages: ['people'], label: 'People list', opts: [['orig', 'Pills'], ['columns', 'Columns'], ['avatars', 'Initial avatars']] },
-    { id: 'portrait', tab: 'design', pages: ['people'], label: 'Profile portrait', opts: [['orig', 'Gradient panel'], ['circle', 'Circle'], ['frame', 'Offset frame']] },
-    { id: 'bullets', tab: 'design', pages: ['people', 'services'], label: 'List bullets', opts: [['orig', 'Em dash'], ['check', 'Tick'], ['numbered', 'Numbered']] },
-    { id: 'jump', tab: 'design', pages: ['services'], label: 'Department shortcuts', opts: [['orig', 'Outline boxes'], ['pills', 'Numbered pills'], ['tabs', 'Tabs']] },
-    { id: 'feature', tab: 'design', pages: ['news'], label: 'Featured story', opts: [['orig', 'Side by side'], ['overlay', 'Overlay'], ['stacked', 'Stacked']] },
-    { id: 'fields', tab: 'design', pages: ['contact'], label: 'Form fields', opts: [['orig', 'Boxed'], ['underline', 'Underline'], ['soft', 'Soft rounded']] },
-    { id: 'details', tab: 'design', pages: ['contact'], label: 'Contact details', opts: [['orig', 'Stacked'], ['cards', 'Cards'], ['rule', 'Red rule']] },
-    { id: 'map', tab: 'design', pages: ['contact'], label: 'Map', opts: [['orig', 'Light'], ['dark', 'Dark'], ['mono', 'Mono + frame']] },
-    /* ---- motion ---- */
-    { id: 'reveal', tab: 'motion', label: 'Scroll reveal', replay: true, opts: [['orig', 'Fade up'], ['blur', 'Blur in'], ['slide', 'Slide in'], ['wipe', 'Wipe'], ['scale', 'Scale']] },
-    { id: 'loader', tab: 'motion', pages: ['index'], label: 'Page loader', replay: true, opts: [['orig', 'Kinetic word'], ['bar', 'Progress line'], ['mono', 'Pulsing monogram'], ['curtain', 'Curtain lift']] },
-    { id: 'heroin', tab: 'motion', pages: ['index'], label: 'Headline entrance', replay: true, opts: [['orig', 'Rise from mask'], ['letters', 'Letter cascade'], ['blur', 'Blur focus'], ['type', 'Typewriter']] },
-    { id: 'herobg', tab: 'motion', pages: ['index'], label: 'Hero background', opts: [['orig', 'Drifting motes'], ['constellation', 'Constellation'], ['rays', 'Light rays'], ['rings', 'Ripples']] },
-    { id: 'scrollhint', tab: 'motion', pages: ['index'], label: 'Scroll hint', opts: [['orig', 'Dripping line'], ['mouse', 'Mouse'], ['chevron', 'Chevron']] },
-    { id: 'ticker', tab: 'motion', pages: ['index'], label: 'Ticker', opts: [['orig', 'Marquee'], ['outline', 'Big outline'], ['double', 'Two rows'], ['static', 'Static']] },
-    { id: 'flip', tab: 'motion', pages: ['index'], label: 'Label animation', opts: [['orig', 'Letter flip'], ['shimmer', 'Gold shimmer'], ['wave', 'Wave'], ['off', 'Still']] },
-    { id: 'parallax', tab: 'motion', pages: ['index'], label: 'Photo strip', opts: [['orig', 'Parallax'], ['zoom', 'Slow zoom'], ['duotone', 'Red duotone'], ['pattern', 'Pattern, no photo']] },
-    { id: 'term', tab: 'motion', pages: ['history'], label: 'Name hover cards', opts: [['orig', 'Follows cursor'], ['tooltip', 'Tooltip'], ['dock', 'Docked corner']] }
+    /* ---------------- whole site ---------------- */
+    { id: 'type', group: 'type', label: 'Heading typeface', opts: [['orig', 'Bodoni Moda'], ['playfair', 'Playfair'], ['cormorant', 'Cormorant'], ['condensed', 'Condensed caps']] },
+    { id: 'body', group: 'type', label: 'Body typeface', opts: [['orig', 'Barlow'], ['manrope', 'Manrope'], ['serif', 'Source Serif']] },
+    { id: 'eyebrow', group: 'type', label: 'Section labels', opts: [['orig', 'Gold rule'], ['chip', 'Boxed chip'], ['dash', 'Red dash'], ['serif', 'Italic serif']] },
+    { id: 'header', group: 'chrome', label: 'Header bar', opts: [['orig', 'Fade to blur'], ['solid', 'Solid bar'], ['float', 'Floating capsule']] },
+    { id: 'nav', group: 'chrome', label: 'Menu hover', opts: [['orig', 'Gold underline'], ['pill', 'Pill'], ['dot', 'Dot'], ['bracket', 'Brackets']] },
+    { id: 'footer', group: 'chrome', label: 'Footer', el: 'footer', opts: [['orig', 'Slim bar'], ['block', 'Big wordmark'], ['centered', 'Centred']] },
+    { id: 'btn', group: 'buttons', label: 'All buttons', opts: [['orig', 'Gold sweep + magnetic'], ['glow', 'Glow lift'], ['slide', 'Side slide'], ['pill', 'Rounded sheen']] },
+    { id: 'reveal', group: 'motion', label: 'Scroll reveal', replay: true, opts: [['orig', 'Fade up'], ['blur', 'Blur in'], ['slide', 'Slide in'], ['wipe', 'Wipe'], ['scale', 'Scale']] },
+    { id: 'pagetrans', group: 'motion', label: 'Page transitions', hint: 'Plays when moving between pages', opts: [['orig', 'Instant'], ['fade', 'Fade'], ['curtain', 'Maroon curtain'], ['shutter', 'Shutters']] },
+    { id: 'cursor', group: 'motion', label: 'Cursor', opts: [['orig', 'Standard'], ['ring', 'Gold ring'], ['dot', 'Blend dot'], ['label', 'Context label']] },
+    { id: 'grain', group: 'features', label: 'Texture overlay', opts: [['orig', 'Film grain'], ['lines', 'Fine lines'], ['vignette', 'Vignette'], ['none', 'None']] },
+    { id: 'progress', group: 'features', label: 'Scroll progress', opts: [['orig', 'Off'], ['line', 'Gold line'], ['bar', 'Red bar'], ['ring', 'Back-to-top ring']] },
+
+    /* ---------------- Home ---------------- */
+    { id: 'herolayout', pages: ['index'], group: 'layout', el: '.hero', label: 'Hero layout', opts: [['orig', 'Left column'], ['panel', 'Framed panel'], ['ruled', 'Ruled margin'], ['bottom', 'Anchored low + info bar']] },
+    { id: 'practice', pages: ['index'], group: 'layout', el: '#practice .cards', label: 'Departments section', opts: [['orig', 'Four cards'], ['bento', 'Bento grid'], ['rows', 'Expanding rows'], ['carousel', 'Swipe carousel']] },
+    { id: 'homenews', pages: ['index'], group: 'layout', el: '#news .posts', label: 'News preview', opts: [['orig', 'Three cards'], ['list', 'Dated list'], ['lead', 'Lead story'], ['strip', 'Numbered strip']] },
+    { id: 'offer', pages: ['index', 'services'], group: 'layout', el: '#offer', label: 'Shelf-company offer', opts: [['orig', 'Red + halo'], ['slate', 'Grey'], ['split', 'Split'], ['stripes', 'Moving stripes']] },
+    { id: 'herobg', pages: ['index'], group: 'background', el: '.hero', label: 'Hero animation', opts: [['orig', 'Drifting motes'], ['constellation', 'Constellation'], ['rays', 'Light rays'], ['rings', 'Ripples']] },
+    { id: 'parallax', pages: ['index'], group: 'background', el: '.parallax-strip', label: 'Photo strip', opts: [['orig', 'Parallax'], ['zoom', 'Slow zoom'], ['duotone', 'Red duotone'], ['pattern', 'Pattern, no photo']] },
+    { id: 'loader', pages: ['index'], group: 'motion', label: 'Page loader', replay: true, opts: [['orig', 'Kinetic word'], ['bar', 'Progress line'], ['mono', 'Pulsing monogram'], ['curtain', 'Curtain lift']] },
+    { id: 'heroin', pages: ['index'], group: 'motion', el: '.hero', label: 'Headline entrance', replay: true, opts: [['orig', 'Rise from mask'], ['letters', 'Letter cascade'], ['blur', 'Blur focus'], ['type', 'Typewriter']] },
+    { id: 'flip', pages: ['index'], group: 'motion', el: '[data-fliptext]', label: 'Label animation', opts: [['orig', 'Letter flip'], ['shimmer', 'Gold shimmer'], ['wave', 'Wave'], ['off', 'Still']] },
+    { id: 'scrollhint', pages: ['index'], group: 'motion', el: '.hero', label: 'Scroll hint', opts: [['orig', 'Dripping line'], ['mouse', 'Mouse'], ['chevron', 'Chevron']] },
+    { id: 'ticker', pages: ['index'], group: 'motion', el: '.ticker', label: 'Ticker', opts: [['orig', 'Marquee'], ['outline', 'Big outline'], ['double', 'Two rows'], ['static', 'Static']] },
+    { id: 'cards', pages: ['index'], group: 'motion', el: '#practice .cards', label: 'Department card hover', opts: [['orig', 'Cursor glow'], ['tilt', '3D tilt'], ['trace', 'Border trace'], ['lift', 'Lift + bar']] },
+    { id: 'posts', pages: ['index', 'news'], group: 'motion', el: '.posts', label: 'News card hover', opts: [['orig', 'Maroon fill'], ['rule', 'Gold top rule'], ['lift', 'Lift'], ['underline', 'Underline']] },
+    { id: 'herocta', pages: ['index'], group: 'buttons', el: '.hero .cta', label: 'Hero buttons', opts: [['orig', 'Solid + outline'], ['split', 'Joined pair'], ['round', 'Round badge'], ['links', 'Serif text links']] },
+    { id: 'stats', pages: ['index'], group: 'features', el: '.stats', label: 'Firm in numbers', replay: true, hint: 'New band under the ticker', opts: [['orig', 'Off'], ['count', 'Count-up'], ['odometer', 'Rolling digits'], ['rings', 'Progress rings']] },
+
+    /* ---------------- History ---------------- */
+    { id: 'timeline', pages: ['history'], group: 'layout', el: '#tl', label: 'Timeline layout', opts: [['orig', 'Centre spine'], ['rail', 'Left rail'], ['cards', 'Cards'], ['horizontal', 'Horizontal scroll']] },
+    { id: 'ink', pages: ['history'], group: 'layout', el: '#tl', label: 'Timeline line', opts: [['orig', 'Glowing gradient'], ['dotted', 'Dotted gold'], ['bold', 'Bold red']] },
+    { id: 'histhero', pages: ['history'], group: 'background', el: '.page-hero', label: 'Header background', replay: true, opts: [['orig', 'Maroon glow'], ['ledger', 'Ledger paper'], ['archive', 'Archive film'], ['years', 'Rolling years']] },
+    { id: 'histbg', pages: ['history'], group: 'background', el: '#history', label: 'Timeline backdrop', opts: [['orig', 'Charcoal'], ['film', 'Old film'], ['photo', 'Sepia photo'], ['inkwash', 'Ink wash']] },
+    { id: 'histmotion', pages: ['history'], group: 'motion', el: '#tl', label: 'Timeline motion', replay: true, opts: [['orig', 'Ink draws in'], ['focus', 'Spotlight'], ['counter', 'Year counter'], ['type', 'Typed entries']] },
+    { id: 'term', pages: ['history'], group: 'motion', el: '.cursor-term', label: 'Name hover cards', opts: [['orig', 'Follows cursor'], ['tooltip', 'Tooltip'], ['dock', 'Docked corner']] },
+    { id: 'histcta', pages: ['history'], group: 'buttons', el: '#history .seclink', label: 'Closing link', opts: [['orig', 'Gold text link'], ['button', 'Gold button'], ['faces', 'Faces pill'], ['banner', 'Full-width banner']] },
+    { id: 'eranav', pages: ['history'], group: 'features', el: '#tl', label: 'Year navigator', hint: 'Jump straight to an era', opts: [['orig', 'Off'], ['dots', 'Side dots'], ['bar', 'Year bar'], ['ring', 'Progress dial']] },
+
+    /* ---------------- Our People ---------------- */
+    { id: 'roster', pages: ['people'], group: 'layout', el: '.people-pills', label: 'Team list', opts: [['orig', 'Pills'], ['columns', 'Columns'], ['avatars', 'Initial avatars']] },
+    { id: 'profiles', pages: ['people'], group: 'layout', el: '#p-millie', label: 'Profile layout', opts: [['orig', 'Stacked'], ['alternate', 'Alternating'], ['tabs', 'Tabbed'], ['accordion', 'Accordion']] },
+    { id: 'portrait', pages: ['people'], group: 'layout', el: '.pfphoto', label: 'Profile portrait', opts: [['orig', 'Gradient panel'], ['circle', 'Circle'], ['frame', 'Offset frame']] },
+    { id: 'bullets', pages: ['people', 'services'], group: 'layout', el: '.list', label: 'List bullets', opts: [['orig', 'Em dash'], ['check', 'Tick'], ['numbered', 'Numbered']] },
+    { id: 'pplhero', pages: ['people'], group: 'background', el: '.page-hero', label: 'Header background', opts: [['orig', 'Maroon glow'], ['mosaic', 'Initials mosaic'], ['marquee', 'Name marquee'], ['spot', 'Cursor spotlight']] },
+    { id: 'pplbg', pages: ['people'], group: 'background', el: '#people', label: 'Team backdrop', opts: [['orig', 'Pinstripe'], ['shelves', 'Library shelves'], ['monogram', 'Monogram pattern'], ['glow', 'Cursor glow']] },
+    { id: 'rostermotion', pages: ['people'], group: 'motion', el: '.people-pills', label: 'Name motion', replay: true, opts: [['orig', 'Fill on hover'], ['cascade', 'Cascade in'], ['dim', 'Dim the others'], ['magnet', 'Magnetic']] },
+    { id: 'profilebtn', pages: ['people'], group: 'buttons', el: '#p-millie', label: 'Profile contact', opts: [['orig', 'Email link'], ['pair', 'Email + call'], ['copy', 'Copy email'], ['card', 'Contact card']] },
+    { id: 'filter', pages: ['people'], group: 'features', el: '#people', label: 'Role filter', hint: 'Filter the team by role or name', opts: [['orig', 'Off'], ['tabs', 'Segmented tabs'], ['chips', 'Chips + counts'], ['search', 'Name search']] },
+
+    /* ---------------- Services ---------------- */
+    { id: 'deptlayout', pages: ['services'], group: 'layout', el: '#companies', label: 'Departments layout', opts: [['orig', 'Long page'], ['tabs', 'Tabs'], ['accordion', 'Accordion'], ['grid', '2 × 2 cards']] },
+    { id: 'svcbg', pages: ['services'], group: 'background', label: 'Background animation', opts: [['orig', 'Aurora'], ['silk', 'Silk ribbons'], ['columns', 'Courthouse columns'], ['blueprint', 'Blueprint grid'], ['still', 'Still']] },
+    { id: 'svchero', pages: ['services'], group: 'background', el: '.page-hero', label: 'Header graphic', opts: [['orig', 'None'], ['panels', 'Department panels'], ['numerals', 'Giant numerals']] },
+    { id: 'listmotion', pages: ['services'], group: 'motion', el: '#companies .list', label: 'Service list motion', replay: true, opts: [['orig', 'Fade in'], ['stagger', 'One by one'], ['tick', 'Ruled draw-in'], ['hover', 'Row highlight']] },
+    { id: 'jump', pages: ['services'], group: 'buttons', el: '.page-hero .jump', label: 'Department shortcuts', opts: [['orig', 'Outline boxes'], ['pills', 'Numbered pills'], ['tabs', 'Tabs'], ['tiles', 'Big tiles']] },
+    { id: 'deptcontact', pages: ['services'], group: 'buttons', el: '#companies', label: 'Department contact', opts: [['orig', 'Line in list'], ['button', 'Contact button'], ['card', 'Partner card'], ['float', 'Floating ask button']] },
+    { id: 'deptnav', pages: ['services'], group: 'features', el: '#companies', label: 'Department tracker', hint: 'Shows where you are on the page', opts: [['orig', 'Off'], ['side', 'Side index'], ['top', 'Sticky bar'], ['dial', 'Corner counter']] },
+
+    /* ---------------- News ---------------- */
+    { id: 'newshero', pages: ['news'], group: 'layout', el: '.page-hero', label: 'Header style', opts: [['orig', 'Standard'], ['masthead', 'Newspaper masthead'], ['split', 'Lead-story teaser']] },
+    { id: 'feature', pages: ['news'], group: 'layout', el: '.feature', label: 'Featured story', opts: [['orig', 'Side by side'], ['overlay', 'Overlay'], ['stacked', 'Stacked'], ['cover', 'Magazine cover']] },
+    { id: 'archive', pages: ['news'], group: 'layout', el: '#news .posts', label: 'Archive layout', opts: [['orig', 'Three cards'], ['list', 'Dated list'], ['columns', 'Newspaper columns'], ['carousel', 'Carousel']] },
+    { id: 'newsbg', pages: ['news'], group: 'background', label: 'Background animation', opts: [['orig', 'Wave grid'], ['halftone', 'Halftone print'], ['headlines', 'Drifting headlines'], ['wire', 'Wire feed'], ['still', 'Still']] },
+    { id: 'newsmotion', pages: ['news'], group: 'motion', el: '.feature', label: 'Story entrance', replay: true, opts: [['orig', 'Fade up'], ['deal', 'Dealt in'], ['flip', 'Flip down'], ['press', 'Press wipe']] },
+    { id: 'readmore', pages: ['news'], group: 'buttons', el: '.feature', label: 'Read buttons', opts: [['orig', 'Text link'], ['pill', 'Pill'], ['circle', 'Expanding circle'], ['bar', 'Card footer bar']] },
+    { id: 'newsfilter', pages: ['news'], group: 'features', el: '#news', label: 'Story filter', opts: [['orig', 'Off'], ['years', 'By year'], ['topics', 'By topic'], ['search', 'Search']] },
+    { id: 'newsticker', pages: ['news'], group: 'features', el: '.page-hero', label: 'Latest headlines', replay: true, opts: [['orig', 'Off'], ['marquee', 'Marquee under header'], ['flash', 'Pop-up card']] },
+
+    /* ---------------- Contact ---------------- */
+    { id: 'contactlayout', pages: ['contact'], group: 'layout', el: '#contact', label: 'Page layout', opts: [['orig', 'Form left'], ['swap', 'Details left'], ['maphero', 'Map first'], ['card', 'Centred card']] },
+    { id: 'fields', pages: ['contact'], group: 'layout', el: '.form', label: 'Field style', opts: [['orig', 'Boxed'], ['underline', 'Underline'], ['soft', 'Soft rounded']] },
+    { id: 'details', pages: ['contact'], group: 'layout', el: '.cgrid aside', label: 'Contact details', opts: [['orig', 'Stacked'], ['cards', 'Cards'], ['rule', 'Red rule']] },
+    { id: 'map', pages: ['contact'], group: 'layout', el: '.map-embed', label: 'Map style', opts: [['orig', 'Light'], ['dark', 'Dark'], ['mono', 'Mono + frame']] },
+    { id: 'contacthero', pages: ['contact'], group: 'background', el: '.page-hero', label: 'Header', opts: [['orig', 'Maroon glow'], ['map', 'Live map'], ['phone', 'Phone-first'], ['stamp', 'Address stamp']] },
+    { id: 'contactbg', pages: ['contact'], group: 'background', el: '#contact', label: 'Section backdrop', opts: [['orig', 'Charcoal'], ['contours', 'Topographic lines'], ['radar', 'Location pulse'], ['streets', 'Street grid']] },
+    { id: 'fieldfx', pages: ['contact'], group: 'motion', el: '.form', label: 'Field focus effect', hint: 'Click into a field to see it', opts: [['orig', 'Border highlight'], ['sweep', 'Underline sweep'], ['glow', 'Glow pulse'], ['lift', 'Lift']] },
+    { id: 'submit', pages: ['contact'], group: 'buttons', el: '.form .submit', label: 'Send button', opts: [['orig', 'Solid sweep'], ['plane', 'Paper plane'], ['wide', 'Progress bar'], ['round', 'Round arrow']] },
+    { id: 'callbtn', pages: ['contact'], group: 'buttons', label: 'Quick call', opts: [['orig', 'Off'], ['float', 'Floating phone'], ['bar', 'Sticky call bar'], ['header', 'Number in header']] },
+    { id: 'formflow', pages: ['contact'], group: 'features', el: '.form', label: 'Form flow', opts: [['orig', 'All fields'], ['steps', 'Step by step'], ['chat', 'Conversational'], ['float', 'Floating labels']] },
+    { id: 'deptpick', pages: ['contact'], group: 'features', el: '#f-dept', label: 'Department picker', opts: [['orig', 'Dropdown'], ['tiles', 'Tiles'], ['chips', 'Chips'], ['radio', 'Radio list']] },
+    { id: 'directions', pages: ['contact'], group: 'features', el: '.map-embed', label: 'Driving directions', hint: 'Wording from the current fhsn.co.za', opts: [['orig', 'Off'], ['tabs', 'Tabs'], ['accordion', 'Accordion'], ['steps', 'Route steps']] }
   ];
   var FEAT = {}; FEATURES.forEach(function (f) { FEAT[f.id] = f; });
   function onPage(f) { return !f.pages || f.pages.indexOf(PAGE) > -1; }
-  function validOpt(id, v) { return FEAT[id] && (v === 'orig' || FEAT[id].opts.some(function (o) { return o[0] === v; }) ||
-    /* backdrop options differ per page; accept any known backdrop */ (id === 'backdrop' && BD_LABEL[v])); }
+  function validOpt(id, v) { return !!FEAT[id] && FEAT[id].opts.some(function (o) { return o[0] === v; }); }
+  var PAGE_FEATS = FEATURES.filter(function (f) { return f.pages && onPage(f); });
+  var SITE_FEATS = FEATURES.filter(function (f) { return !f.pages; });
 
   /* ================= colour math ================= */
   function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
@@ -154,9 +209,11 @@
   }
 
   /* ================= state ================= */
-  var state = { red: ORIGINAL.red, grey: ORIGINAL.grey, v: {}, list: [], a: null, b: null, live: null, open: false, tab: 'colour' };
+  var state = { red: ORIGINAL.red, grey: ORIGINAL.grey, v: {}, list: [], a: null, b: null, live: null, open: false, tab: 'page' };
   try { var saved = JSON.parse(localStorage.getItem(KEY)); if (saved) for (var s in saved) state[s] = saved[s]; } catch (e) {}
   state.v = state.v || {};
+  for (var id in state.v) if (state.v[id] === 'orig' || !validOpt(id, state.v[id])) delete state.v[id];   /* drop retired options */
+  if (!/^(page|site|colour|compare)$/.test(state.tab)) state.tab = 'page';
   var qs = new URLSearchParams(location.search);
   if (validHex(qs.get('red'))) state.red = validHex(qs.get('red'));
   if (validHex(qs.get('grey'))) state.grey = validHex(qs.get('grey'));
@@ -165,8 +222,13 @@
     qs.get('v').split('~').forEach(function (pair) { var p = pair.split('.'); if (validOpt(p[0], p[1]) && p[1] !== 'orig') state.v[p[0]] = p[1]; });
   }
   if (qs.get('lab') === '1') state.open = true;   /* ?lab=1 opens the panel — send this to the client */
-  if (/^(colour|type|design|motion|compare)$/.test(qs.get('tab') || '')) state.tab = qs.get('tab');
+  if (/^(page|site|colour|compare)$/.test(qs.get('tab') || '')) state.tab = qs.get('tab');
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  /* page transition: arriving from another page of the site (flag set by variants.js) */
+  try {
+    if (state.v.pagetrans && sessionStorage.getItem('fhsn-pt')) ROOT.classList.add('pt-enter');
+    sessionStorage.removeItem('fhsn-pt');
+  } catch (e) {}
 
   var ui = null, pending = false;
   function changed() {
@@ -204,16 +266,16 @@
     document.head.appendChild(l);
   }
   function applyVariant(id, fire) {
-    var v = state.v[id] || 'orig';
-    if (v === 'orig') ROOT.removeAttribute('data-v-' + id); else ROOT.setAttribute('data-v-' + id, v);
+    var f = FEAT[id], v = state.v[id] || 'orig';
+    if (v === 'orig' || !onPage(f)) ROOT.removeAttribute('data-v-' + id); else ROOT.setAttribute('data-v-' + id, v);
     if (id === 'type' || id === 'body') loadFont(v);
-    if (fire) document.dispatchEvent(new CustomEvent('fhsn:variant', { detail: { id: id, value: v } }));
+    if (fire && onPage(f)) document.dispatchEvent(new CustomEvent('fhsn:variant', { detail: { id: id, value: v } }));
   }
   function setVariant(id, v) {
     if (v === 'orig') delete state.v[id]; else state.v[id] = v;
     state.live = null; applyVariant(id, true); changed();
   }
-  /* swap the whole design (colours + every variant) — used by A/B, shortlist, resets */
+  /* swap the whole design (colours + every variant) — used by A/B, shortlist, resets, shuffle */
   function useCombo(c, live) {
     var before = state.v, after = c.v || {};
     state.red = c.red; state.grey = c.grey; state.v = Object.assign({}, after); state.live = live || null;
@@ -245,6 +307,19 @@
     if (!toastEl) { toastEl = el('div', { class: 'lab-toast', role: 'status' }); document.body.appendChild(toastEl); }
     toastEl.textContent = msg; toastEl.classList.add('show');
     clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove('show'); }, 1800);
+  }
+  /* bring the changed part of the page into view and flash an outline round it */
+  function showTarget(f) {
+    if (!f || !f.el) return;
+    var t = document.querySelector(f.el); if (!t || !t.getClientRects().length) return;
+    var r = t.getBoundingClientRect();
+    var seen = Math.min(r.bottom, innerHeight) - Math.max(r.top, 0);   /* scroll unless at least half of it is on screen */
+    if (seen < Math.min(r.height, innerHeight) * .5) {
+      var off = Math.max(90, (innerHeight - Math.min(r.height, innerHeight * .7)) / 2);
+      scrollTo({ top: r.top + scrollY - off, behavior: 'smooth' });
+    }
+    t.classList.remove('lab-flash'); void t.offsetWidth; t.classList.add('lab-flash');
+    setTimeout(function () { t.classList.remove('lab-flash'); }, 1500);
   }
 
   function makePicker(fam) {
@@ -322,49 +397,51 @@
     };
   }
 
-  /* one row per feature: label + an option chip for the original and each alternative */
+  /* one row per feature: label + a chip for the original and each alternative */
   function featureRow(f) {
-    return '<div class="lab-feat" data-f="' + f.id + '"><div class="lab-feat-h"><span>' + f.label + '</span>' +
+    return '<div class="lab-feat" data-f="' + f.id + '"><div class="lab-feat-h"><span>' + f.label + (f.hint ? '<small>' + f.hint + '</small>' : '') + '</span>' +
       (f.replay ? '<button class="lab-replay" data-a="replay" data-id="' + f.id + '" title="Replay animation">↻ Replay</button>' : '') + '</div>' +
       '<div class="lab-opts">' + f.opts.map(function (o, i) {
-        return '<button data-a="opt" data-id="' + f.id + '" data-v="' + o[0] + '"><em>' + (i ? String.fromCharCode(64 + i) : 'Orig') + '</em>' + o[1] + '</button>';
+        return '<button data-a="opt" data-id="' + f.id + '" data-v="' + o[0] + '"><em>' + (i ? 'Option ' + String.fromCharCode(64 + i) : 'Original') + '</em>' + o[1] + '</button>';
       }).join('') + '</div></div>';
   }
-  function featurePanel(tab) {
-    var mine = FEATURES.filter(function (f) { return f.tab === tab && f.pages && onPage(f); });
-    var site = FEATURES.filter(function (f) { return f.tab === tab && !f.pages; });
-    var others = FEATURES.filter(function (f) { return f.tab === tab && f.pages && !onPage(f); });
-    var PAGE_NAME = { index: 'Home', history: 'History', people: 'Our People', services: 'Services', news: 'News', contact: 'Contact' }[PAGE] || PAGE;
-    return (mine.length ? '<section><h3>On this page · ' + PAGE_NAME + '</h3>' + mine.map(featureRow).join('') + '</section>' : '') +
-      (site.length ? '<section><h3>Every page</h3>' + site.map(featureRow).join('') + '</section>' : '') +
-      (others.length ? '<section><p class="lab-note">' + others.length + ' more on other pages: ' +
-        others.map(function (f) { return f.label + ' (' + f.pages.join(', ').replace('index', 'home') + ')'; }).join(' · ') + '</p></section>' : '') +
-      '<section><button class="lab-btn" data-a="reset-tab" data-tab="' + tab + '">Reset this tab to original</button></section>';
+  function groupedPanel(feats, groups) {
+    return groups.map(function (g) {
+      var fs = feats.filter(function (f) { return f.group === g; });
+      return fs.length ? '<section class="lab-group"><h3>' + GROUPS[g] + '<small>' + fs.length + '</small></h3>' + fs.map(featureRow).join('') + '</section>' : '';
+    }).join('');
   }
 
-  var TABS = [['colour', 'Colour'], ['type', 'Type'], ['design', 'Design'], ['motion', 'Motion'], ['compare', 'Compare']];
+  var TABS = [['page', PAGE_NAME + ' page'], ['site', 'Whole site'], ['colour', 'Colour'], ['compare', 'Compare']];
   function build() {
     var tab = el('button', { id: 'lab-tab', 'aria-controls': 'lab', 'aria-expanded': 'false' }, 'Design Lab');
     var panel = el('aside', { id: 'lab', 'aria-label': 'Design Lab' });
     panel.innerHTML =
-      '<div class="lab-head"><div><h2>Design Lab</h2><small>Pick variations · compare A/B · save favourites</small></div>' +
+      '<div class="lab-head"><div><h2>Design Lab</h2><small>Try options · compare A/B · save favourites</small></div>' +
       '<button class="x" aria-label="Close Design Lab">×</button></div>' +
       '<div class="lab-tabs" role="tablist">' + TABS.map(function (t) { return '<button role="tab" data-tab="' + t[0] + '">' + t[1] + '<small></small></button>'; }).join('') + '</div>' +
       '<div class="lab-body">' +
+        '<div data-panel="page">' +
+          '<div class="lab-pages" role="navigation" aria-label="Edit another page">' + PAGES.map(function (p) {
+            return p[0] === PAGE ? '<span class="on">' + p[1] + '</span>' : '<a href="./' + p[0] + '.html">' + p[1] + '</a>';
+          }).join('') + '</div>' +
+          '<p class="lab-intro">' + PAGE_FEATS.length + ' features unique to the ' + PAGE_NAME + ' page. Every choice is saved as you move between pages.</p>' +
+          groupedPanel(PAGE_FEATS, PAGE_GROUPS) +
+          '<section class="lab-btns"><button class="lab-btn" data-a="shuffle">⟳ Shuffle this page</button><button class="lab-btn" data-a="reset-page">Reset this page</button></section>' +
+        '</div>' +
+        '<div data-panel="site"><p class="lab-intro">Applies to all six pages.</p>' + groupedPanel(SITE_FEATS, SITE_GROUPS) +
+          '<section class="lab-btns"><button class="lab-btn" data-a="reset-site">Reset whole-site options</button></section></div>' +
         '<div data-panel="colour">' +
           '<section><h3>Colour scale</h3><div class="lab-scale"><div class="g"><span>Grey</span><span data-o="grey"></span></div><div class="r"><span>Red</span><span data-o="red"></span></div></div></section>' +
           '<section class="pickers"></section>' +
           '<section><h3>All shades in use</h3><div class="lab-tokens"></div><div class="lab-contrast"></div></section>' +
           '<section><button class="lab-btn" data-a="reset-colour">Reset colours to original</button></section>' +
         '</div>' +
-        '<div data-panel="type">' + featurePanel('type') + '</div>' +
-        '<div data-panel="design">' + featurePanel('design') + '</div>' +
-        '<div data-panel="motion">' + featurePanel('motion') + '</div>' +
         '<div data-panel="compare">' +
           '<section><h3>A / B compare</h3><div class="lab-ab">' +
             ['a', 'b'].map(function (k) { return '<div class="lab-slot" data-slot="' + k + '"><div class="lbl">' + k.toUpperCase() + '</div><div class="sw"></div><button class="lab-btn" data-a="set-' + k + '">Set current as ' + k.toUpperCase() + '</button></div>'; }).join('') +
             '<button class="lab-btn primary lab-flip" data-a="flip">Flip A ⇄ B</button></div>' +
-            '<p class="lab-note">A and B hold the whole design — colours plus every Type, Design and Motion choice. Press <b>F</b> anywhere to flip.</p></section>' +
+            '<p class="lab-note">A and B hold the whole design — colours plus every page and site option. Press <b>F</b> anywhere to flip.</p></section>' +
           '<section><h3>Shortlist</h3><ol class="lab-list"></ol></section>' +
           '<section><div class="lab-btns"><button class="lab-btn" data-a="reset-all">Reset everything to original</button></div></section>' +
         '</div>' +
@@ -388,15 +465,19 @@
       var next = state.live === 'a' ? 'b' : 'a';
       useCombo(state[next], next); toast('Showing ' + next.toUpperCase());
     }
-    function resetFeatures(filter) {
-      var c = current(); FEATURES.forEach(function (f) { if (filter(f)) delete c.v[f.id]; }); useCombo(c);
-    }
+    function resetFeatures(list) { var c = current(); list.forEach(function (f) { delete c.v[f.id]; }); useCombo(c); }
     panel.addEventListener('click', function (e) {
       var b = e.target.closest('[data-a],[data-tab]'); if (!b) return;
       if (!b.dataset.a) { state.tab = b.dataset.tab; changed(); panel.querySelector('.lab-body').scrollTop = 0; return; }
       var a = b.dataset.a, cur = current();
-      if (a === 'opt') setVariant(b.dataset.id, b.dataset.v);
-      else if (a === 'replay') document.dispatchEvent(new CustomEvent('fhsn:variant', { detail: { id: b.dataset.id, value: state.v[b.dataset.id] || 'orig' } }));
+      if (a === 'opt') { setVariant(b.dataset.id, b.dataset.v); showTarget(FEAT[b.dataset.id]); }
+      else if (a === 'replay') { document.dispatchEvent(new CustomEvent('fhsn:variant', { detail: { id: b.dataset.id, value: state.v[b.dataset.id] || 'orig' } })); showTarget(FEAT[b.dataset.id]); }
+      else if (a === 'shuffle') {
+        PAGE_FEATS.forEach(function (f) { var o = f.opts[Math.floor(Math.random() * f.opts.length)][0]; if (o === 'orig') delete cur.v[f.id]; else cur.v[f.id] = o; });
+        useCombo(cur); toast('Shuffled — keep what you like');
+      }
+      else if (a === 'reset-page') { resetFeatures(PAGE_FEATS); toast(PAGE_NAME + ' page reset to original'); }
+      else if (a === 'reset-site') { resetFeatures(SITE_FEATS); toast('Whole-site options reset'); }
       else if (a === 'save') {
         if (state.list.some(function (c) { return key(c) === key(cur); })) { toast('Already in shortlist'); return; }
         cur.id = Date.now(); cur.name = 'Design ' + (state.list.length + 1); cur.fav = false;
@@ -408,7 +489,6 @@
           .then(function () { toast('Link copied'); }, function () { window.prompt('Copy this link', url); });
       }
       else if (a === 'reset-colour') { cur.red = ORIGINAL.red; cur.grey = ORIGINAL.grey; useCombo(cur); toast('Original colours restored'); }
-      else if (a === 'reset-tab') { resetFeatures(function (f) { return f.tab === b.dataset.tab; }); toast('Tab reset to original'); }
       else if (a === 'reset-all') { useCombo({ red: ORIGINAL.red, grey: ORIGINAL.grey, v: {} }); toast('Original design restored'); }
       else if (a === 'set-a' || a === 'set-b') { state[a.slice(4)] = cur; state.live = a.slice(4); changed(); }
       else if (a === 'flip') flip();
@@ -423,8 +503,8 @@
     ui = {
       refresh: function () {
         /* tabs + change counts */
-        var counts = { colour: (state.red !== ORIGINAL.red) + (state.grey !== ORIGINAL.grey), compare: state.list.length };
-        FEATURES.forEach(function (f) { if (state.v[f.id]) counts[f.tab] = (counts[f.tab] || 0) + 1; });
+        var count = function (list) { return list.filter(function (f) { return state.v[f.id]; }).length; };
+        var counts = { page: count(PAGE_FEATS), site: count(SITE_FEATS), colour: (state.red !== ORIGINAL.red) + (state.grey !== ORIGINAL.grey), compare: state.list.length };
         panel.querySelectorAll('.lab-tabs button').forEach(function (t) {
           var k = t.dataset.tab; t.classList.toggle('on', state.tab === k); t.setAttribute('aria-selected', state.tab === k);
           t.querySelector('small').textContent = counts[k] ? (k === 'compare' ? counts[k] + ' saved' : counts[k] + ' changed') : '';

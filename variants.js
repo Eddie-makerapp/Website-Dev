@@ -38,41 +38,80 @@
     track.parentNode.appendChild(rev);
   }
 
-  /* ---------- page backdrops (services + news) ---------- */
-  var page = (location.pathname.split('/').pop() || 'index.html').replace('.html', '') || 'index';
-  var DEFAULT_BD = { services: 'aurora', news: 'wave' }[page];
-  if (!DEFAULT_BD) return;
-  var body = document.body;
-  function el(cls, html, id) {
-    var d = document.createElement('div'); if (cls) d.className = cls; if (id) d.id = id;
-    d.setAttribute('aria-hidden', 'true'); if (html) d.innerHTML = html;
-    body.insertBefore(d, body.firstChild); return d;
+  /* ---------- page transitions (whole site) ---------- */
+  var ROOT = document.documentElement;
+  function overlay(kind) {
+    var o = document.createElement('div'); o.className = 'pt-ov pt-' + kind; o.setAttribute('aria-hidden', 'true');
+    o.innerHTML = kind === 'shutter' ? '<i></i><i></i><i></i><i></i><i></i>' : '<i></i>';
+    document.body.appendChild(o); return o;
   }
-  function loadThree(cb) {
-    if (window.THREE) return cb();
-    var s = document.createElement('script');
-    s.src = 'https://unpkg.com/three@0.128.0/build/three.min.js';
-    s.integrity = 'sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu'; s.crossOrigin = 'anonymous';
-    s.onload = cb; document.head.appendChild(s);
-  }
-  function backdrop() {
-    var want = V('backdrop'); if (want === 'orig') want = DEFAULT_BD;
-    var aur = document.querySelector('.svc-aurora'), wave = document.getElementById('wave-grid'),
-        scrim = document.querySelector('.wave-scrim'), orbs = document.querySelector('.bd-orbs');
-    if (want === 'aurora' && !aur) aur = el('svc-aurora', '<div class="aur"></div>');
-    if (want === 'orbs' && !orbs) orbs = el('bd-orbs', '<i></i><i></i><i></i>');
-    if (want === 'wave' && !wave) {
-      scrim = el('wave-scrim'); wave = el('', '', 'wave-grid');
-      loadThree(function () { window.fhsnWaveGrid(); });
+  if (ROOT.classList.contains('pt-enter')) {       /* lab.js flagged an arrival from another page */
+    var kind = V('pagetrans');
+    if (kind === 'fade') {
+      requestAnimationFrame(function () { ROOT.classList.add('pt-go'); });
+      setTimeout(function () { ROOT.classList.remove('pt-enter', 'pt-go'); }, 700);
+    } else {
+      var o = overlay(kind); o.classList.add('cover'); ROOT.classList.remove('pt-enter');
+      requestAnimationFrame(function () { requestAnimationFrame(function () { o.classList.add('out'); }); });
+      setTimeout(function () { o.remove(); }, 1400);
     }
-    if (aur) aur.style.display = want === 'aurora' ? '' : 'none';
-    if (wave) wave.style.display = want === 'wave' ? '' : 'none';
-    if (scrim) scrim.style.display = want === 'wave' ? '' : 'none';
-    if (orbs) orbs.style.display = want === 'orbs' ? '' : 'none';
-    body.classList.toggle('svc-aurora-page', want === 'aurora');
-    body.classList.toggle('wave-page', want === 'wave');
-    body.classList.toggle('orbs-page', want === 'orbs');
-    body.classList.toggle('plain-page', want === 'plain');
   }
-  backdrop(); onVariant('backdrop', backdrop);
+  document.addEventListener('click', function (e) {
+    var kind = V('pagetrans'); if (kind === 'orig') return;
+    var a = e.target.closest('a[href]');
+    if (!a || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target === '_blank') return;
+    var url = new URL(a.href, location.href);
+    if (url.origin !== location.origin || !/(\.html|\/)$/.test(url.pathname)) return;
+    if (url.pathname === location.pathname && url.hash) return;
+    e.preventDefault();
+    try { sessionStorage.setItem('fhsn-pt', '1'); } catch (er) {}
+    if (kind === 'fade') ROOT.classList.add('pt-leave');
+    else { var ov = overlay(kind); requestAnimationFrame(function () { requestAnimationFrame(function () { ov.classList.add('in'); }); }); }
+    setTimeout(function () { location.href = a.href; }, kind === 'fade' ? 380 : 700);
+  });
+  addEventListener('pageshow', function (e) {
+    if (!e.persisted) return;
+    ROOT.classList.remove('pt-leave');
+    document.querySelectorAll('.pt-ov').forEach(function (o) { o.remove(); });
+  });
+
+  /* ---------- custom cursor (whole site, mouse only) ---------- */
+  if (window.matchMedia('(pointer: fine)').matches) {
+    var cur = document.createElement('div'); cur.className = 'cur'; cur.setAttribute('aria-hidden', 'true');
+    cur.innerHTML = '<span></span>'; document.body.appendChild(cur);
+    var label = cur.firstChild, mx = -100, my = -100, px = -100, py = -100, raf = null;
+    var labelFor = function (el) {
+      var h = el.getAttribute('href') || '';
+      if (/^tel:/.test(h)) return 'Call';
+      if (/^mailto:/.test(h)) return 'Email';
+      if (/INPUT|TEXTAREA|SELECT/.test(el.tagName)) return 'Type';
+      return el.tagName === 'A' ? 'Open' : 'Click';
+    };
+    var loop = function () {
+      var k = V('cursor') === 'dot' ? .5 : .22;
+      px += (mx - px) * k; py += (my - py) * k;
+      cur.style.transform = 'translate3d(' + px + 'px,' + py + 'px,0)';
+      raf = Math.abs(mx - px) + Math.abs(my - py) > .3 ? requestAnimationFrame(loop) : null;
+    };
+    addEventListener('mousemove', function (e) {
+      mx = e.clientX; my = e.clientY;
+      if (V('cursor') === 'orig') return;
+      var hot = e.target.closest && e.target.closest('a,button,input,select,textarea,[role=button]');
+      cur.classList.toggle('hot', !!hot);
+      if (V('cursor') === 'label') label.textContent = hot ? labelFor(hot) : '';
+      if (!raf) raf = requestAnimationFrame(loop);
+    }, { passive: true });
+  }
+
+  /* ---------- scroll progress (whole site) ---------- */
+  var bar = document.createElement('div'); bar.className = 'sprog'; bar.setAttribute('aria-hidden', 'true'); bar.innerHTML = '<i></i>';
+  var ring = document.createElement('button'); ring.className = 'sprog-ring'; ring.type = 'button'; ring.setAttribute('aria-label', 'Back to top');
+  ring.innerHTML = '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21"/><circle class="p" cx="24" cy="24" r="21"/></svg><span aria-hidden="true">↑</span>';
+  document.body.appendChild(bar); document.body.appendChild(ring);
+  ring.addEventListener('click', function () { scrollTo({ top: 0, behavior: 'smooth' }); });
+  var updProgress = function () {
+    var h = document.documentElement.scrollHeight - innerHeight, p = h > 0 ? scrollY / h : 0;
+    ROOT.style.setProperty('--sp', p.toFixed(4)); ring.classList.toggle('show', scrollY > 400);
+  };
+  addEventListener('scroll', updProgress, { passive: true }); addEventListener('resize', updProgress); updProgress();
 })();
