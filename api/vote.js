@@ -7,6 +7,8 @@
      VOTE_EMAIL      optional. Recipient; defaults to durandt9919@gmail.com.
      VOTE_FROM       optional. Sender; defaults to Resend's test sender, which
                      can only deliver to the Resend account's own address.
+     SITE_URL        optional. Base URL for the "open the site as they voted"
+                     link; defaults to the website-dev production domain.
 
    The recipient is fixed here on the server, so the endpoint cannot be used
    to email anyone else. Everything from the browser is length-limited,
@@ -14,6 +16,7 @@
    ============================================================ */
 const TO = process.env.VOTE_EMAIL || 'durandt9919@gmail.com';
 const FROM = process.env.VOTE_FROM || 'FHSN Design Lab <onboarding@resend.dev>';
+const SITE = (process.env.SITE_URL || 'https://website-dev-nine-sable.vercel.app').replace(/\/+$/, '');
 const ID = /^[a-z]{2,20}$/;
 const HEX = /^#[0-9a-f]{6}$/i;
 
@@ -56,11 +59,9 @@ module.exports = async (req, res) => {
   /* link that reopens the site exactly as this person voted (rebuilt from validated ids only) */
   const v = Object.entries(b.v && typeof b.v === 'object' ? b.v : {}).slice(0, 120)
     .filter(([k, val]) => ID.test(k) && ID.test(val) && val !== 'orig').map(([k, val]) => k + '.' + val).join('~');
-  const host = str(req.headers['x-forwarded-host'] || req.headers.host, 120);
-  const proto = /^localhost|^127\./.test(host) ? 'http' : 'https';
-  const link = /^[a-z0-9.-]+(:\d+)?$/i.test(host)
-    ? proto + '://' + host + '/index.html?' + [red && 'red=' + red.slice(1), grey && 'grey=' + grey.slice(1), v && 'v=' + v].filter(Boolean).join('&')
-    : '';
+  /* base URL is server-configured, never taken from request headers (a forged Host / X-Forwarded-Host
+     would otherwise put an attacker's link inside an email the owner trusts) */
+  const link = SITE + '/index.html?' + [red && 'red=' + red.slice(1), grey && 'grey=' + grey.slice(1), v && 'v=' + v].filter(Boolean).join('&');
 
   const savedCount = pages.filter(p => p.saved).length;
   const changedCount = pages.reduce((n, p) => n + (p.saved ? p.items.filter(i => i.changed).length : 0), 0) + site.filter(i => i.changed).length;
