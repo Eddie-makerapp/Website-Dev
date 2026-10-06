@@ -149,3 +149,32 @@ body.lab-open #lab{transform:none;visibility:visible;box-shadow:-12px 0 40px rgb
 /* outline flashed round the part of the page that just changed */
 .lab-flash{outline:2px dashed rgba(255,255,255,.85)!important;outline-offset:-4px!important;animation:labFlash 1.5s ease-out forwards}
 @keyframes labFlash{0%,55%{outline-color:rgba(255,255,255,.9)}100%{outline-color:rgba(255,255,255,0)}}
+
+/* ---- voting: name screen, review, thank-you (sheet over the panel) ---- */
+.lab-sheet{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;overflow:auto;padding:30px 22px;background:#151515}
+.lab-sheet[hidden]{display:none}
+#lab .lab-sheet h3{margin-bottom:12px;font-size:22px;color:#fff}
+.lab-sheet p{margin:0 0 16px;font-size:14px;line-height:1.5;color:#b5b5b5}
+.lab-sheet p b{color:#fff}
+.lab-gate label{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#9a9a9a}
+.lab-gate input{padding:12px 14px;border:1px solid #3a3a3a;border-radius:6px;background:#0f0f0f;color:#fff;font:16px "Barlow Semi Condensed",system-ui,sans-serif;letter-spacing:0;text-transform:none}
+.lab-gate input:focus{outline:2px solid #ececec;outline-offset:1px}
+.lab-gate .lab-btn{width:100%;margin-top:8px;padding:12px}
+.lab-hp{position:absolute!important;left:-9999px;width:1px;height:1px;opacity:0}
+.lab-sheet .lab-err{color:#ff9a9a}
+.lab-sheet .lab-warn{color:#ffd27a}
+.lab-sum{list-style:none;margin:0 0 16px;border-top:1px solid #2c2c2c}
+.lab-sum li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid #2c2c2c;font-size:14px}
+.lab-sum li > span::before{content:"✓";display:inline-block;width:22px;color:#7bd88f}
+.lab-sum li.miss > span::before{content:"–";color:#ffd27a}
+.lab-sum small{font-size:12.5px;text-align:right;color:#9a9a9a}
+.lab-sum a{color:#fff;text-decoration:underline}
+.lab-sum .lab-mini{width:70px;margin:0}
+.lab-thanks{margin:auto 0;text-align:center}
+.lab-tick{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 18px;border-radius:50%;background:#1f6b3a;color:#fff;font-size:30px}
+.lab-who b{color:#ececec}
+.lab-who button{padding:0;background:none;border:0;color:#bbb;text-decoration:underline;font:inherit;cursor:pointer}
+.lab-pages i{font-style:normal;color:#7bd88f}
+.lab-pages span.on i{color:#1f6b3a}
+.lab-count{white-space:nowrap;color:#ececec}
+.lab-foot a.lab-btn{display:flex;align-items:center;justify-content:center;text-decoration:none;color:#ececec}

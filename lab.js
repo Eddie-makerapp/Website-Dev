@@ -16,6 +16,10 @@
    belongs to — and fires 'fhsn:variant' {id, value}. The hero seal
    is deliberately not variable.
 
+   VOTING — each voter enters a name, presses "Save vote" on every
+   page (stores that page's picks) and "Cast vote" on the Contact page,
+   which POSTs the whole ballot to /api/vote (api/vote.js emails it).
+
    State: localStorage (per browser) + share links
    (?red=&grey=&v=id.option~id.option).
    ============================================================ */
@@ -27,6 +31,9 @@
   if (!PAGES.some(function (p) { return p[0] === PAGE; })) PAGE = 'index';
   var PAGE_NAME = PAGES.filter(function (p) { return p[0] === PAGE; })[0][1];
   ROOT.dataset.page = PAGE;
+  var PAGE_IDX = PAGES.map(function (p) { return p[0]; }).indexOf(PAGE);
+  var NEXT = PAGES[PAGE_IDX + 1] || null;   /* voting runs Home → … → Contact */
+  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
   /* ================= colour families ================= */
   var FAMILIES = {
@@ -209,9 +216,10 @@
   }
 
   /* ================= state ================= */
-  var state = { red: ORIGINAL.red, grey: ORIGINAL.grey, v: {}, list: [], a: null, b: null, live: null, open: false, tab: 'page' };
+  var state = { red: ORIGINAL.red, grey: ORIGINAL.grey, v: {}, list: [], a: null, b: null, live: null, open: false, tab: 'page', voter: null, ballot: {}, cast: null };
   try { var saved = JSON.parse(localStorage.getItem(KEY)); if (saved) for (var s in saved) state[s] = saved[s]; } catch (e) {}
   state.v = state.v || {};
+  state.ballot = state.ballot || {};
   for (var id in state.v) if (state.v[id] === 'orig' || !validOpt(id, state.v[id])) delete state.v[id];   /* drop retired options */
   if (!/^(page|site|colour|compare)$/.test(state.tab)) state.tab = 'page';
   var qs = new URLSearchParams(location.search);
@@ -417,15 +425,13 @@
     var tab = el('button', { id: 'lab-tab', 'aria-controls': 'lab', 'aria-expanded': 'false' }, 'Design Lab');
     var panel = el('aside', { id: 'lab', 'aria-label': 'Design Lab' });
     panel.innerHTML =
-      '<div class="lab-head"><div><h2>Design Lab</h2><small>Try options · compare A/B · save favourites</small></div>' +
+      '<div class="lab-head"><div><h2>Design Lab</h2><small class="lab-who"></small></div>' +
       '<button class="x" aria-label="Close Design Lab">×</button></div>' +
       '<div class="lab-tabs" role="tablist">' + TABS.map(function (t) { return '<button role="tab" data-tab="' + t[0] + '">' + t[1] + '<small></small></button>'; }).join('') + '</div>' +
       '<div class="lab-body">' +
         '<div data-panel="page">' +
-          '<div class="lab-pages" role="navigation" aria-label="Edit another page">' + PAGES.map(function (p) {
-            return p[0] === PAGE ? '<span class="on">' + p[1] + '</span>' : '<a href="./' + p[0] + '.html">' + p[1] + '</a>';
-          }).join('') + '</div>' +
-          '<p class="lab-intro">' + PAGE_FEATS.length + ' features unique to the ' + PAGE_NAME + ' page. Every choice is saved as you move between pages.</p>' +
+          '<div class="lab-pages" role="navigation" aria-label="Pages"></div>' +
+          '<p class="lab-intro lab-vote-intro"></p>' +
           groupedPanel(PAGE_FEATS, PAGE_GROUPS) +
           '<section class="lab-btns"><button class="lab-btn" data-a="shuffle">⟳ Shuffle this page</button><button class="lab-btn" data-a="reset-page">Reset this page</button></section>' +
         '</div>' +
@@ -442,11 +448,14 @@
             ['a', 'b'].map(function (k) { return '<div class="lab-slot" data-slot="' + k + '"><div class="lbl">' + k.toUpperCase() + '</div><div class="sw"></div><button class="lab-btn" data-a="set-' + k + '">Set current as ' + k.toUpperCase() + '</button></div>'; }).join('') +
             '<button class="lab-btn primary lab-flip" data-a="flip">Flip A ⇄ B</button></div>' +
             '<p class="lab-note">A and B hold the whole design — colours plus every page and site option. Press <b>F</b> anywhere to flip.</p></section>' +
-          '<section><h3>Shortlist</h3><ol class="lab-list"></ol></section>' +
+          '<section><h3>Shortlist</h3><div class="lab-btns" style="margin-bottom:10px"><button class="lab-btn primary" data-a="save">♥ Save current design</button><button class="lab-btn" data-a="share">Copy share link</button></div><ol class="lab-list"></ol></section>' +
           '<section><div class="lab-btns"><button class="lab-btn" data-a="reset-all">Reset everything to original</button></div></section>' +
         '</div>' +
       '</div>' +
-      '<div class="lab-foot"><button class="lab-btn primary" data-a="save">♥ Save design</button><button class="lab-btn" data-a="share">Copy share link</button></div>';
+      '<div class="lab-foot">' + (PAGE === 'contact'
+        ? '<button class="lab-btn primary" data-a="cast">Cast vote</button>'
+        : '<button class="lab-btn primary" data-a="savevote">Save vote</button><a class="lab-btn" href="./' + NEXT[0] + '.html">Next: ' + NEXT[1] + ' →</a>') + '</div>' +
+      '<div class="lab-sheet" hidden></div>';
     document.body.appendChild(panel); document.body.appendChild(tab);
 
     var pickers = { red: makePicker('red'), grey: makePicker('grey') };
@@ -456,7 +465,7 @@
       state.open = o; document.body.classList.toggle('lab-open', o);
       tab.setAttribute('aria-expanded', o); tab.textContent = o ? 'Close' : 'Design Lab'; save();
     }
-    tab.onclick = function () { setOpen(!state.open); };
+    tab.onclick = function () { setOpen(!state.open); if (state.open && wantGate()) showGate(); };
     panel.querySelector('.x').onclick = function () { setOpen(false); };
     setOpen(!!state.open);
 
@@ -466,11 +475,99 @@
       useCombo(state[next], next); toast('Showing ' + next.toUpperCase());
     }
     function resetFeatures(list) { var c = current(); list.forEach(function (f) { delete c.v[f.id]; }); useCombo(c); }
+
+    /* ---------------- voting ---------------- */
+    var sheet = panel.querySelector('.lab-sheet'), hp = '';
+    function optLabel(f, v) { var o = f.opts.filter(function (x) { return x[0] === v; })[0]; return (o || f.opts[0])[1]; }
+    function featsOn(pid) { return FEATURES.filter(function (f) { return f.pages && f.pages.indexOf(pid) > -1; }); }
+    function voterName() { return state.voter ? state.voter.first + ' ' + state.voter.last : ''; }
+    /* ask for a name the first time the panel opens (unless they chose "just looking" this session) */
+    function wantGate() { var skip = false; try { skip = !!sessionStorage.getItem('fhsn-gate-skip'); } catch (er) {} return !state.voter && !skip && sheet.hidden; }
+    function savedCount() { return PAGES.filter(function (p) { return state.ballot[p[0]]; }).length; }
+    function openSheet(html) { sheet.innerHTML = html; sheet.hidden = false; setOpen(true); var f = sheet.querySelector('input,button'); if (f) f.focus(); }
+    function closeSheet() { sheet.hidden = true; sheet.innerHTML = ''; }
+    function showGate() {
+      openSheet('<form class="lab-gate" novalidate><h3>Vote on the new website</h3>' +
+        '<p>Go through each page, pick the options you like best and press <b>Save vote</b>. On the Contact page press <b>Cast vote</b> to send your choices.</p>' +
+        '<label>Name<input name="first" maxlength="60" autocomplete="given-name" value="' + esc(state.voter ? state.voter.first : '') + '"></label>' +
+        '<label>Surname<input name="last" maxlength="60" autocomplete="family-name" value="' + esc(state.voter ? state.voter.last : '') + '"></label>' +
+        '<input class="lab-hp" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+        '<p class="lab-err" role="alert" hidden></p><button class="lab-btn primary" type="submit">' + (state.voter ? 'Save name' : 'Start voting') + '</button>' +
+        '<button class="lab-btn" type="button" data-a="close-sheet">' + (state.voter ? 'Cancel' : 'Just looking for now') + '</button></form>');
+    }
+    function saveVote(quiet) {
+      if (!state.voter) { showGate(); return false; }
+      var v = {}; PAGE_FEATS.forEach(function (f) { v[f.id] = state.v[f.id] || 'orig'; });
+      state.ballot[PAGE] = { v: v, at: Date.now() }; changed();
+      if (!quiet) toast('Vote saved for the ' + PAGE_NAME + ' page ✓' + (NEXT ? ' — next: ' + NEXT[1] : ''));
+      return true;
+    }
+    function ballotPayload() {
+      var pages = PAGES.map(function (p) {
+        var b = state.ballot[p[0]];
+        return { id: p[0], name: p[1], saved: !!b, items: featsOn(p[0]).map(function (f) {
+          var val = b ? (b.v[f.id] || 'orig') : 'orig';
+          return { id: f.id, label: f.label, value: val, choice: optLabel(f, val) };
+        }) };
+      });
+      var site = SITE_FEATS.map(function (f) { var val = state.v[f.id] || 'orig'; return { id: f.id, label: f.label, value: val, choice: optLabel(f, val) }; });
+      var v = {};   /* one combined design for the "open the site as they voted" link */
+      site.concat.apply(site, pages.filter(function (p) { return p.saved; }).map(function (p) { return p.items; }))
+        .forEach(function (i) { if (i.value !== 'orig') v[i.id] = i.value; });
+      return { voter: state.voter, hp: hp, updated: !!state.cast, colours: { red: state.red, grey: state.grey }, pages: pages, site: site, v: v };
+    }
+    function showReview() {
+      var miss = PAGES.filter(function (p) { return !state.ballot[p[0]]; });
+      openSheet('<div class="lab-review"><h3>Ready to send?</h3><p>Voting as <b>' + esc(voterName()) + '</b></p><ul class="lab-sum">' +
+        PAGES.map(function (p) {
+          var b = state.ballot[p[0]], n = b ? featsOn(p[0]).filter(function (f) { return (b.v[f.id] || 'orig') !== 'orig'; }).length : 0;
+          return '<li class="' + (b ? 'ok' : 'miss') + '"><span>' + (b || p[0] === PAGE ? p[1] : '<a href="./' + p[0] + '.html">' + p[1] + '</a>') + '</span><small>' +
+            (b ? n + ' option' + (n === 1 ? '' : 's') + ' changed' : 'not saved — no preference') + '</small></li>';
+        }).join('') +
+        '<li class="ok"><span>Colours</span><small>' + mini(state.red, state.grey) + '</small></li>' +
+        '<li class="ok"><span>Whole site</span><small>' + SITE_FEATS.filter(function (f) { return state.v[f.id]; }).length + ' options changed</small></li></ul>' +
+        (miss.length ? '<p class="lab-warn">' + miss.length + (miss.length > 1 ? ' pages have' : ' page has') + ' no saved vote. You can still send, or tap the page to go back and save it first.</p>' : '') +
+        '<p class="lab-err" role="alert" hidden></p><div class="lab-btns"><button class="lab-btn primary" data-a="send">' + (state.cast ? 'Send updated vote' : 'Send my vote') + '</button>' +
+        '<button class="lab-btn" data-a="close-sheet">Back</button></div></div>');
+    }
+    function sendVote(btn) {
+      var err = sheet.querySelector('.lab-err');
+      btn.disabled = true; btn.textContent = 'Sending…'; err.hidden = true;
+      fetch('/api/vote', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(ballotPayload()) })
+        .then(function (r) {
+          return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok || !j.ok) throw new Error(j.error || 'Could not send your vote (error ' + r.status + ').'); });
+        })
+        .then(function () { state.cast = { at: Date.now() }; changed(); showThanks(); })
+        .catch(function (e) {
+          btn.disabled = false; btn.textContent = 'Try again';
+          err.textContent = e instanceof TypeError ? 'No connection — please check your internet and try again.' : e.message;
+          err.hidden = false;
+        });
+    }
+    function showThanks() {
+      openSheet('<div class="lab-thanks"><div class="lab-tick" aria-hidden="true">✓</div><h3>Thank you, ' + esc(state.voter.first) + '</h3>' +
+        '<p>Your vote has been sent. You can close this panel, or change your picks later and send an updated vote.</p>' +
+        '<div class="lab-btns"><button class="lab-btn primary" data-a="close-sheet">Close</button><button class="lab-btn" data-a="new-voter">New voter on this device</button></div></div>');
+    }
+    panel.addEventListener('submit', function (e) {
+      var f = e.target.closest('.lab-gate'); if (!f) return;
+      e.preventDefault();
+      var first = f.elements.first.value.trim(), last = f.elements.last.value.trim(); hp = f.elements.company.value;
+      if (!first || !last) { var er = f.querySelector('.lab-err'); er.textContent = 'Please enter your name and surname.'; er.hidden = false; return; }
+      state.voter = { first: first.slice(0, 60), last: last.slice(0, 60) }; changed(); closeSheet();
+      toast('Welcome, ' + state.voter.first + ' — pick your favourites');
+    });
     panel.addEventListener('click', function (e) {
       var b = e.target.closest('[data-a],[data-tab]'); if (!b) return;
       if (!b.dataset.a) { state.tab = b.dataset.tab; changed(); panel.querySelector('.lab-body').scrollTop = 0; return; }
       var a = b.dataset.a, cur = current();
       if (a === 'opt') { setVariant(b.dataset.id, b.dataset.v); showTarget(FEAT[b.dataset.id]); }
+      else if (a === 'savevote') saveVote();
+      else if (a === 'cast') { if (saveVote(true)) showReview(); }
+      else if (a === 'send') sendVote(b);
+      else if (a === 'close-sheet') { if (!state.voter) { try { sessionStorage.setItem('fhsn-gate-skip', '1'); } catch (er) {} } closeSheet(); }
+      else if (a === 'edit-voter') showGate();
+      else if (a === 'new-voter') { state.voter = null; state.ballot = {}; state.cast = null; useCombo({ red: ORIGINAL.red, grey: ORIGINAL.grey, v: {} }); showGate(); }
       else if (a === 'replay') { document.dispatchEvent(new CustomEvent('fhsn:variant', { detail: { id: b.dataset.id, value: state.v[b.dataset.id] || 'orig' } })); showTarget(FEAT[b.dataset.id]); }
       else if (a === 'shuffle') {
         PAGE_FEATS.forEach(function (f) { var o = f.opts[Math.floor(Math.random() * f.opts.length)][0]; if (o === 'orig') delete cur.v[f.id]; else cur.v[f.id] = o; });
@@ -511,6 +608,20 @@
         });
         panel.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.dataset.panel !== state.tab; });
 
+        /* voting */
+        panel.querySelector('.lab-who').innerHTML = state.voter
+          ? 'Voting as <b>' + esc(voterName()) + '</b> · <button data-a="edit-voter">change</button>'
+          : 'Pick your favourites, then vote';
+        panel.querySelector('.lab-pages').innerHTML = PAGES.map(function (p) {
+          var tick = state.ballot[p[0]] ? ' <i aria-label="vote saved">✓</i>' : '';
+          return p[0] === PAGE ? '<span class="on">' + p[1] + tick + '</span>' : '<a href="./' + p[0] + '.html">' + p[1] + tick + '</a>';
+        }).join('');
+        panel.querySelector('.lab-vote-intro').innerHTML = PAGE_FEATS.length + ' features unique to the ' + PAGE_NAME + ' page. Pick your favourite for each, then press <b>' +
+          (PAGE === 'contact' ? 'Cast vote' : 'Save vote') + '</b>. <span class="lab-count">' + savedCount() + ' of ' + PAGES.length + ' pages saved</span>';
+        var fb = panel.querySelector('.lab-foot .primary'), sv = state.ballot[PAGE];
+        if (PAGE === 'contact') fb.textContent = state.cast ? 'Send updated vote' : 'Cast vote';
+        else fb.textContent = !sv ? 'Save vote' : PAGE_FEATS.some(function (f) { return (state.v[f.id] || 'orig') !== sv.v[f.id]; }) ? 'Save changes to vote' : 'Vote saved ✓';
+
         /* colour */
         pickers.red.refresh(); pickers.grey.refresh();
         panel.querySelector('[data-o=red]').textContent = state.red;
@@ -546,6 +657,7 @@
       }
     };
     ui.refresh();
+    if (state.open && wantGate()) showGate();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();
 })();
